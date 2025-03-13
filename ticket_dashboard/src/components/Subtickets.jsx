@@ -1,4 +1,6 @@
 import { useParams, Link } from "react-router-dom";
+import CreateTicketModal from "./CreateTicketModal";
+import { useState } from "react";
 
 const tickets = [
     {
@@ -124,6 +126,16 @@ const Subtickets = () => {
     const { ticketId } = useParams(); // Get ticketId from URL
     const ticket = tickets.find((t) => t.id === parseInt(ticketId));
 
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const openModal = () => {
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+    };
+
     return (
         <div>
             <div className="flex flex-col items-start p-1 border rounded shadow-md bg-white rounded-md">
@@ -133,7 +145,8 @@ const Subtickets = () => {
                             <p className="text-md text-gray-500 font-bold">Subticket</p>
                         </div>
                         <div>
-                            <button className="text-2xl text-gray-500">+</button>
+                            <button className="text-2xl text-gray-500" onClick={openModal}>+</button>
+                            {isModalOpen && <CreateTicketModal onClick={closeModal} isOpen={isModalOpen} isSubticket={true} />}
                         </div>
                     </div>
                     {ticket.subtickets.map((subticket, index) => (

@@ -1,12 +1,13 @@
 import Routing from './Routing'
+import { TicketProvider } from './context/context'
 
 function App() {
   return (
-    <>
       <div>
-        <Routing />
+        <TicketProvider>
+          <Routing />
+        </TicketProvider>
       </div>
-    </>
   )
 }
 

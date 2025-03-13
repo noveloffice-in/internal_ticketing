@@ -11,11 +11,11 @@ const Layout = () => {
     };
 
     return (
-        <div className="flex bg-gray-200">
-            {/* Sidebar */}
-            <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-
             <div className={`flex-1 transition-all duration-300 ${isSidebarOpen ? "ml-[270px]" : "ml-[60px]"}`}>
+
+                {/* Sidebar */}
+                <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+                
                 {/* Navbar */}
                 <Navbar toggleSidebar={toggleSidebar} />
 
@@ -24,7 +24,6 @@ const Layout = () => {
                     <Outlet />
                 </div>
             </div>
-        </div>
     );
 };
 

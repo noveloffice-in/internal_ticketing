@@ -123,20 +123,20 @@ const TicketSubDetails = () => {
                                 </div>
                             </div>
                         )}
-                        {field === "due" && <p><strong>Due Date:</strong> {ticket.due}</p>}
+                        {field === "due" && <p className="text-gray-500">Due Date: {ticket.due}</p>}
                         {field === "status" && (
-                            <p className={`text-${ticket.status === "On Hold" ? "red" : "green"}-600`}>
-                                <strong>Status:</strong> {ticket.status}
+                            <p className={`text-${ticket.status === "On Hold" ? "red" : "green"}-600 text-gray-500`} >
+                                Status: {ticket.status}
                             </p>
                         )}
                         {field === "priority" && (
-                            <p className={`text-${ticket.priority === "High" ? "red" : "green"}-600`}>
-                                <strong>Priority:</strong> {ticket.priority} Priority
+                            <p className="text-gray-500">
+                                Priority: {ticket.priority} Priority
                             </p>
                         )}
                     </div>
                 ))}
-                <p><strong>Ticket Created:</strong> Sat 09-11-2024 12:16 PM</p>
+                <p className="text-gray-500 text-sm">Ticket Created: Sat 09-11-2024 12:16 PM</p>
             </div>
         </div>
     )

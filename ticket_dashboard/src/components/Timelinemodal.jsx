@@ -1,4 +1,5 @@
 import React from 'react';
+import { useEffect } from 'react';
 import { useParams, Link } from "react-router-dom";
 
 const tickets = [
@@ -112,9 +113,18 @@ const tickets = [
 const Modal = ({ onClose }) => {
     const { ticketId } = useParams(); // Get ticketId from URL
     const ticket = tickets.find((t) => t.id === parseInt(ticketId));
+    useEffect(() => {
+        // Disable scrolling when modal opens
+        document.body.style.overflow = "hidden";
+        
+        return () => {
+            // Enable scrolling when modal closes
+            document.body.style.overflow = "auto";
+        };
+    }, []);
 
     return (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-100 overflow-hidden flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-50 backdrop-blur-sm overflow-hidden flex items-center justify-center z-[1300]">
             <div className="p-5 border w-3/5 shadow-lg rounded-md bg-white">
                 <h3 className="text-lg leading-6 font-bold text-gray-900 text-left">Ticket Timeline</h3>
                 <div className="m-3">

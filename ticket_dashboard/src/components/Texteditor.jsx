@@ -1,18 +1,41 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Editor } from "primereact/editor";
+import { FaPaperPlane } from "react-icons/fa";
 
+const TextEditor = ({ editorText, setEditorText, setFinalMessage }) => {
+    const [isTyping, setIsTyping] = useState(false);
 
-const TextEditor = () => {
-    const [text, setText] = useState('');
+    useEffect(() => {
+        setIsTyping(editorText.trim() !== "");
+    }, [editorText]);
+
+    const handleSendMessage = () => {
+        if (editorText.trim() !== "") {
+            setFinalMessage({ message: editorText });
+        }
+        setEditorText("");
+    };
 
     return (
-        // <div className="w-full bg-white pt-4 pl-4 rounded-lg shadow-md mt-4">
-        <div className="card bg-white mt-4 rounded-md shadow-md border-none ">
-            <Editor value={text} onTextChange={(e) => setText(e.htmlValue)} style={{ height: '150px' }} />
+        <div className="card bg-white mt-4 rounded-md shadow-md border-none relative">
+            <Editor
+                value={editorText}
+                onTextChange={(e) => {
+                    setEditorText(e.textValue);
+                }}
+                placeholder="Type a message..."
+                style={{ height: '150px' }}
+            />
+            {isTyping && (
+                <button
+                    className="absolute bottom-2 right-2 bg-purple-500 text-white p-2 rounded-full"
+                    onClick={handleSendMessage}
+                >
+                    <FaPaperPlane />
+                </button>
+            )}
         </div>
-
     )
 }
-
 
 export default TextEditor;

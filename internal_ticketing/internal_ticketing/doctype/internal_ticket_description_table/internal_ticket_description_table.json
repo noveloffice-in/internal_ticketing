@@ -1,0 +1,51 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-03-07 19:05:58.092061",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "sender_section",
+  "sender",
+  "message",
+  "date"
+ ],
+ "fields": [
+  {
+   "fieldname": "sender_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "sender",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Sender",
+   "options": "User"
+  },
+  {
+   "fieldname": "message",
+   "fieldtype": "Long Text",
+   "in_list_view": 1,
+   "label": "Message"
+  },
+  {
+   "fieldname": "date",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Date"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-03-07 22:07:19.592896",
+ "modified_by": "Administrator",
+ "module": "Internal Ticketing",
+ "name": "Internal Ticket Description Table",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

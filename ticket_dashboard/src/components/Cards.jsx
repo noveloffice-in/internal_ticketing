@@ -1,14 +1,11 @@
 import React from 'react';
-import {FaTicket, FaTicketSimple} from "react-icons/fa6"
-import {FaCircleCheck} from "react-icons/fa6"
-import {FaRegPaperPlane} from "react-icons/fa6"
-import {FaUserPlus} from "react-icons/fa6"
-import {FaCircleExclamation} from "react-icons/fa6"
+import { FaTicket, FaTicketSimple, FaCircleCheck, FaRegPaperPlane, FaUserPlus, FaCircleExclamation } from "react-icons/fa6";
 
 
-const Cards = ({ ticketInfo }) => {
+
+const Cards = ({ ticketInfo, onSelect }) => {
   return (
-    <div className="bg-white shadow-md rounded-xl p-4 w-[195px] h-[100px] mt-4">
+    <div className="bg-white shadow-md rounded-xl p-4 w-[195px] h-[100px] mt-4 cursor-pointer hover:bg-gray-300" onClick={() => onSelect(ticketInfo.status.replace(" Tickets", ""))}>
         <div className='flex items-center justify-between text-gray-600'>
             {ticketInfo.status}
         </div>

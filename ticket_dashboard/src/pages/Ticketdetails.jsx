@@ -6,6 +6,7 @@ import Subtickets from "../components/Subtickets";
 import TicketTimeline from "../components/Tickettimeline";
 import TextEditor from "../components/Texteditor";
 import Ticketbuttons from "../components/Ticketbuttons";
+import { useState } from "react";
 
 
 const tickets = [
@@ -115,9 +116,23 @@ const tickets = [
 ];
 
 
-const TicketDetails = () => {
-  const { ticketId } = useParams(); // Get ticketId from URL
+const TicketDetails = ( ) => {
+  const { ticketId } = useParams();
+
   const ticket = tickets.find((t) => t.id === parseInt(ticketId));
+
+  const [editorText, setEditorText] = useState("");  // Stores text from TextEditor
+  const [selectedStatus, setSelectedStatus] = useState("");  // Stores selected status
+  const [finalMessage, setFinalMessage] = useState(null);
+
+  const handleStatusChange = (status) => {
+    if (editorText.trim() !== "") {
+      setFinalMessage({ status, message: editorText });
+    }
+    setSelectedStatus(status);
+    setEditorText("");
+  };
+
 
   if (!ticket) return <p className="text-center text-red-600">Ticket not found</p>;
 
@@ -131,19 +146,15 @@ const TicketDetails = () => {
       <div className="flex">
 
         <div className="w-3/4 p-2 mt-2">
-          <TicketMessages />
-          <TextEditor />
+          <TicketMessages finalMessage={finalMessage}  />
+          <TextEditor editorText={editorText} setEditorText={setEditorText} setFinalMessage={setFinalMessage} />
         </div>
 
         <div className="w-1/4 p-1 flex flex-col gap-2 mt-3">
           <TicketSubDetails />
-
           < Subtickets />
-
           <TicketTimeline />
-          <Ticketbuttons />
-
-
+          <Ticketbuttons handleStatusChange={handleStatusChange} />
         </div>
 
       </div>

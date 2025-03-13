@@ -1,0 +1,156 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:INT-TICK-ID-{######}",
+ "creation": "2025-03-07 19:03:12.096112",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "ticket_summary_section",
+  "column_break_obtk",
+  "assigned_department",
+  "subject",
+  "assigned_to",
+  "description",
+  "ticket_status",
+  "due_date",
+  "ticket_timeline_section",
+  "ticket_timeline",
+  "approval_section_section",
+  "need_approval",
+  "approver",
+  "verbally_approveds",
+  "approved",
+  "approval_status",
+  "sub_ticket_section_section",
+  "parent_ticket"
+ ],
+ "fields": [
+  {
+   "fieldname": "column_break_obtk",
+   "fieldtype": "Column Break",
+   "options": "Department"
+  },
+  {
+   "fieldname": "assigned_department",
+   "fieldtype": "Link",
+   "label": "Assigned Department",
+   "options": "Departments"
+  },
+  {
+   "fieldname": "subject",
+   "fieldtype": "Data",
+   "label": "Subject"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Table",
+   "label": "Description",
+   "options": "Internal Ticket Description Table"
+  },
+  {
+   "fieldname": "ticket_status",
+   "fieldtype": "Link",
+   "label": "Ticket Status",
+   "options": "Internal Ticket Status"
+  },
+  {
+   "default": "0",
+   "fieldname": "need_approval",
+   "fieldtype": "Check",
+   "label": "Need Approval"
+  },
+  {
+   "fieldname": "approver",
+   "fieldtype": "Link",
+   "label": "Approver",
+   "options": "User"
+  },
+  {
+   "default": "0",
+   "fieldname": "verbally_approveds",
+   "fieldtype": "Check",
+   "label": "Verbally Approveds"
+  },
+  {
+   "default": "0",
+   "fieldname": "approved",
+   "fieldtype": "Check",
+   "label": "Approved"
+  },
+  {
+   "fieldname": "approval_status",
+   "fieldtype": "Select",
+   "label": "Approval Status",
+   "options": "\nApproval Pending\nApproved"
+  },
+  {
+   "fieldname": "parent_ticket",
+   "fieldtype": "Link",
+   "label": "Parent Ticket",
+   "options": "Internal Tickets"
+  },
+  {
+   "fieldname": "ticket_summary_section",
+   "fieldtype": "Section Break",
+   "label": "Ticket Summary"
+  },
+  {
+   "fieldname": "approval_section_section",
+   "fieldtype": "Section Break",
+   "label": "Approval Section"
+  },
+  {
+   "fieldname": "sub_ticket_section_section",
+   "fieldtype": "Section Break",
+   "label": "Sub Ticket Section"
+  },
+  {
+   "fieldname": "ticket_timeline_section",
+   "fieldtype": "Section Break",
+   "label": "Ticket Timeline"
+  },
+  {
+   "fieldname": "ticket_timeline",
+   "fieldtype": "Table",
+   "label": "Ticket Timeline",
+   "options": "Ticket Timline Tracker"
+  },
+  {
+   "fieldname": "assigned_to",
+   "fieldtype": "Link",
+   "label": "Assigned To",
+   "options": "User"
+  },
+  {
+   "fieldname": "due_date",
+   "fieldtype": "Date",
+   "label": "Due Date"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-03-12 17:42:10.998743",
+ "modified_by": "Administrator",
+ "module": "Internal Ticketing",
+ "name": "Internal Tickets",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
