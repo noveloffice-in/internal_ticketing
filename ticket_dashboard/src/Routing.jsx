@@ -13,9 +13,9 @@ const Routing = () => {
             <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
                 <Routes>
                     <Route path="/login" element={<Login />}  /> 
-                    <Route path="/" element={ <RequireAuth> <Layout /></RequireAuth>}>
+                    <Route path="/dashboard" element={ <RequireAuth> <Layout /></RequireAuth>}>
                         <Route index element={<Home />} />
-                        <Route path="tickets/:ticketId" element={<TicketDetails />} />
+                        <Route path="/dashboard/tickets/:ticketId" element={<TicketDetails />} />
                     </Route>
                 </Routes>
             </Suspense>

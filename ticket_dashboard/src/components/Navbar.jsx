@@ -10,14 +10,15 @@ export default function Navbar({ toggleSidebar }) {
             <div className="flex items-center justify-between">
                 {/* Logo */}
                 <div className="text-lg text-black">
+
                     <span className="font-bold text-black">MyLogo</span>
                 </div>
 
                 {/* Profile Icons */}
                 <div className="relative flex items-center gap-4">
-                    <button className="text-gray-600 text-2xl p-2">
+                    {/* <button className="text-gray-600 text-2xl p-2">
                         <FaBell />
-                    </button>
+                    </button> */}
 
                     <button
                         className="text-gray-600 text-2xl p-2 relative"

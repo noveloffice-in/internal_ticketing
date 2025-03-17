@@ -14,8 +14,9 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
                 />
 
                 {/* Sidebar Links */}
+                
                 {[
-                    { icon: FaSignOutAlt, text: "Login", path: "/login" },
+                    { icon: FaHistory, text: "Login", path: "/login" },
                     { icon: FaUser, text: "Profile", path: "/profile" },
                     { icon: FaSignOutAlt, text: "Logout", path: "/logout" },
                 ].map((item, index) => (

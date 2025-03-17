@@ -1,5 +1,7 @@
 import { useParams, Link } from "react-router-dom";
-import { FaUserCircle } from "react-icons/fa";
+import { FaUserCircle, FaEdit } from "react-icons/fa";
+import { useState } from "react";
+
 
 const tickets = [
     {
@@ -13,6 +15,7 @@ const tickets = [
         status: "Open",
         priority: "High",
         profile: "RN",
+        creation: "Sat 09-11-2024 12:16 PM",
         timeline: [
             {
                 changes: "Harry changed the status to Working to On Hold  ",
@@ -50,6 +53,7 @@ const tickets = [
         status: "In Progress",
         priority: "Medium",
         profile: "RK",
+        creation: "Sat 09-11-2024 12:16 PM",
         timeline: [
             {
                 changes: "Harry changed the status to In Progress to On Hold",
@@ -91,6 +95,7 @@ const tickets = [
         status: "Closed",
         priority: "Low",
         profile: "AV",
+        creation: "Sat 09-11-2024 12:16 PM",
         timeline: [
             {
                 changes: "Harry changed the status to Closed to Open",
@@ -105,39 +110,156 @@ const tickets = [
     }
 ];
 
-const TicketSubDetails = () => {
-    const { ticketId } = useParams(); // Get ticketId from URL
-    const ticket = tickets.find((t) => t.id === parseInt(ticketId));
+const users = [
+    {
+        name: "Rajeshwari N",
+        username: "rajeshwari.n@noveloffice.com",
+    },
+    {
+        name: "Sakshya P",
+        username: "sakshya.p@noveloffice.com",
+    },
+    {
+        name: "Rohan K",
+        username: "rohan.k@noveloffice.com",
+    },
+    {
+        name: "Aditi V",
+        username: "aditi.v@noveloffice.com",
+    },
+];
+
+const TicketSubDetails = ({ ticketSubDetails }) => {
+
+    const [dueDate, setDueDate] = useState();
+    const [selectedDate, setSelectedDate] = useState("");
+
+    const [showStatus, setShowStatus] = useState(false);
+    const [ticketStatus, setTicketStatus] = useState(ticketSubDetails.ticket_status);
+
+    const [showPriority, setShowPriority] = useState(false);
+    const [ticketPriority, setTicketPriority] = useState(ticketSubDetails.priority);
+
+    const [showAssignee, setShowAssignee] = useState(false);
+    const [ticketAssignee, setTicketAssignee] = useState(ticketSubDetails.assigned_to);
+
+    const handleStatusChange = (status) => {
+        setTicketStatus(status);
+    }
+
+    const handlePriorityChange = (priority) => {
+        setTicketPriority(priority);
+    }
+
+    const handleAssigneeChange = (assignee) => {
+        setTicketAssignee(assignee);
+    }
+
+    const handleDateChange = (e) => {
+        setSelectedDate(e.target.value);
+    };
+
+
 
     return (
-        <div>
-            <div className="flex flex-col items-start p-4 border rounded shadow-md bg-white rounded-md">
-                {["assignee", "due", "status", "priority"].map((field, index) => (
-                    <div key={index} className="mb-2">
-                        {field === "assignee" && (
-                            <div className="flex items-center mb-4">
-                                <FaUserCircle className="text-4xl mr-2" />
-                                <div>
-                                    <p className="font-bold">{ticket.assignee}</p>
-                                    <p className="text-sm text-gray-500">Business Development Manager</p>
-                                </div>
-                            </div>
-                        )}
-                        {field === "due" && <p className="text-gray-500">Due Date: {ticket.due}</p>}
-                        {field === "status" && (
-                            <p className={`text-${ticket.status === "On Hold" ? "red" : "green"}-600 text-gray-500`} >
-                                Status: {ticket.status}
-                            </p>
-                        )}
-                        {field === "priority" && (
-                            <p className="text-gray-500">
-                                Priority: {ticket.priority} Priority
-                            </p>
-                        )}
+        <div className="flex flex-col items-start p-4 border rounded shadow-md bg-white w-full overflow-hidden">
+            {ticketSubDetails.map((subdetails, index) => (
+                <div key={index} className="mb-2 w-full">
+
+                    <div className="flex items-center mb-4 flex-wrap w-full">
+                        <FaUserCircle className="text-4xl mr-2" />
+                        <div>
+                            <p className="font-bold">{subdetails.full_name}</p>
+                            <p className="text-sm text-gray-500">{subdetails.designation}</p>
+                        </div>
                     </div>
-                ))}
-                <p className="text-gray-500 text-sm">Ticket Created: Sat 09-11-2024 12:16 PM</p>
-            </div>
+
+                    <div className="text-gray-500 flex items-center w-full">
+                        <strong className="mr-2 text-sm">Assigned To: </strong> {subdetails.full_name}
+                        <span className="ml-2 cursor-pointer text-blue-500">
+                            <FaEdit onClick={() => setShowAssignee(!showAssignee)} />
+                            {showAssignee && (
+                                <div className="flex relative">
+                                    {/* <ul className="absolute top-full right-0 bg-white border border-gray-300 rounded-md shadow-lg w-60">
+                                        {subdetails.assigned_to.map((user, index) => (
+                                            <li key={index} className="px-4 py-2 hover:bg-gray-100 cursor-pointer" onClick={() => {
+                                                handleAssigneeChange(user);
+                                                setShowAssignee(false);
+                                            }}>
+                                                {user.username}
+                                            </li>
+                                        ))}
+                                    </ul> */}
+                                </div>
+                            )}
+                        </span>
+                    </div>
+
+                    <div className="text-gray-500 flex items-center flex-wrap w-full">
+                        <strong className="mr-2 text-sm">Due Date: </strong>
+                        {subdetails.due_date ?
+                            <>
+                                <span>{new Date(subdetails.due_date).toLocaleDateString('en-GB')}</span>
+                                <input type="date" value={selectedDate} onChange={(e) => handleDateChange(e)} className="ml-2" />
+                            </> :
+                            (selectedDate ? new Date(selectedDate).toLocaleDateString('en-GB') :
+                                <input type="date" value={selectedDate} onChange={(e) => handleDateChange(e)} />
+                            )
+                        }
+                    </div>
+
+                    <div className={`text-${subdetails.ticket_status === "On Hold" ? "red" : "green"}-600 text-gray-500 flex items-center w-full`}>
+                        <strong className="mr-2 text-sm">Status: </strong> {subdetails.ticket_status}
+                        <span className="ml-2 cursor-pointer text-blue-500">
+                            <FaEdit onClick={() => setShowStatus(!showStatus)} />
+                            {showStatus && (
+                                <div className="flex relative">
+                                    <ul className="absolute top-full right-0 bg-white border border-gray-300 rounded-md shadow-lg w-40">
+                                        {['Open', 'In Progress', 'Closed', 'On Hold'].map((status, index) => (
+                                            <li
+                                                key={index}
+                                                className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                                                onClick={() => {
+                                                    handleStatusChange(status);
+                                                    setShowStatus(false);
+                                                }}
+                                            >
+                                                {status}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                        </span>
+                    </div>
+
+                    <div className="text-gray-500 flex items-center flex-wrap w-full">
+                        <strong className="mr-2 text-sm">Priority: </strong> {subdetails.priority}
+                        <span className="ml-2 cursor-pointer text-blue-500">
+                            <FaEdit onClick={() => setShowPriority(!showPriority)} />
+                            {showPriority && (
+                                <div className="flex relative">
+                                    <ul className="absolute top-full right-0 bg-white border border-gray-300 rounded-md shadow-lg w-40">
+                                        {['High', 'Medium', 'Low'].map((priority, index) => (
+                                            <li key={index} className="px-4 py-2 hover:bg-gray-100 cursor-pointer" onClick={() => {
+                                                handlePriorityChange(priority);
+                                                setShowPriority(false);
+                                            }}>
+                                                {priority}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                        </span>
+                    </div>
+
+                    <div className="text-gray-500 flex items-center text-xs mt-2 w-full">
+                        <strong className="mr-2 text-sm">Ticket Creation: </strong> {subdetails.creation}
+                    </div>
+
+                </div>
+            ))}
         </div>
     )
 }

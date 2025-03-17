@@ -6,161 +6,120 @@ import Subtickets from "../components/Subtickets";
 import TicketTimeline from "../components/Tickettimeline";
 import TextEditor from "../components/Texteditor";
 import Ticketbuttons from "../components/Ticketbuttons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useFrappePostCall } from "frappe-react-sdk";
+
+const TicketDetails = () => {
+    const { ticketId } = useParams();
+
+    const [ticketSubDetails, setTicketSubDetails] = useState([]);
+    const [subTicketInfo, setSubTicketInfo] = useState([]);
+    const [ticketTimeline, setTicketTimeline] = useState([]);
+    const [ticketMessages, setTicketMessages] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [editorText, setEditorText] = useState("");
+    const [finalMessage, setFinalMessage] = useState(null);
+
+    const { call: getTicketSubDetails } = useFrappePostCall("internal_ticketing.ticketing_api.get_ticket_sub_details");
+    const { call: getSubTicketInfo } = useFrappePostCall("internal_ticketing.ticketing_api.get_sub_ticket_info");
+    const { call: getTicketTimeline } = useFrappePostCall("internal_ticketing.ticketing_api.get_ticket_timeline");
+    const { call: getTicketMessages } = useFrappePostCall("internal_ticketing.ticketing_api.get_ticket_messages");
 
 
-const tickets = [
-  {
-    id: 1,
-    time: "Feb 03, 17:24",
-    message: "Hi there, I'm sending an email because I'm having a problem setting up your new product. Can you help me troubleshoot? Thanks,",
-    title: "Server Down",
-    description: "Urgent server issue",
-    assignee: "Sakshya P",
-    due: "Today",
-    status: "Open",
-    priority: "High",
-    profile: "RN",
-    timeline: [
-      {
-        changes: "Harry changed the status to Working to On Hold  ",
-        time: "6 days ago"
-      },
-      {
-        changes: "Harry changed the status to On Hold to Cancelled",
-        time: "1 week ago"
-      }
-    ],
-    messages: [
-      { author: "Sakshya P", time: "Feb 03, 17:24", message: "Hi there, I'm sending an email because I'm having a problem setting up your new product. Can you help me troubleshoot? Thanks," },
-      { author: "Rohan K", time: "Feb 03, 17:45", message: "I've got some cool items in my cart on your site, but before I take the plunge, I want to understand how much I'll be paying for shipping. The numbers can be a bit scary when you don't know what they're for. Can you help me understand what all influences the shipping costs? Is there a calculator or formula I can use first?" },
-      { author: "Sakshya P", time: "Feb 03, 17:50", message: "I'm having trouble with the new feature on your site. It's not working as expected and I'm not sure how to fix it. Can you help me troubleshoot? Thanks!" },
-      { author: "Rohan K", time: "Feb 03, 17:50", message: "I'm having trouble with the new feature on your site. It's not working as expected and I'm not sure how to fix it. Can you help me troubleshoot? Thanks!" },
-      { author: "Sakshya P", time: "Feb 03, 17:50", message: "I'm having trouble with the new feature on your site. It's not working as expected and I'm not sure how to fix it. Can you help me troubleshoot? Thanks!" },
-    ],
-    subtickets: [
-      {
-        id: 1,
-        title: "Subticket 1",
-        description: "Subticket 1 description",
-        assignee: "Sakshya P",
-        status: "Open",
-        priority: "High"
-      }
-    ]
-  },
-  {
-    id: 2,
-    time: "Feb 03, 17:45",
-    message: "I've got some cool items in my cart on your site, but before I take the plunge, I want to understand how much I'll be paying for shipping. The numbers can be a bit scary when you don't know what they're for. Can you help me understand what all influences the shipping costs? Is there a calculator or formula I can use first?",
-    title: "Payment Failure",
-    description: "Payment not processed",
-    assignee: "Rohan K",
-    due: "Tomorrow",
-    status: "In Progress",
-    priority: "Medium",
-    profile: "RK",
-    timeline: [
-      {
-        changes: "Harry changed the status to In Progress to On Hold",
-        time: "6 days ago"
-      },
+    const getTicketSubDetailsfunc = (ticketId) => {
+        return getTicketSubDetails({ ticket_id: ticketId });
+    };
 
-    ],
-    messages: [
-      { author: "Rohan K", time: "Feb 03, 17:45", message: "I've got some cool items in my cart on your site, but before I take the plunge, I want to understand how much I'll be paying for shipping. The numbers can be a bit scary when you don't know what they're for. Can you help me understand what all influences the shipping costs? Is there a calculator or formula I can use first?" },
-      { author: "Sakshya P", time: "Feb 03, 17:50", message: "I'm having trouble with the new feature on your site. It's not working as expected and I'm not sure how to fix it. Can you help me troubleshoot? Thanks!" }
-    ],
-    subtickets: [
-      {
-        id: 1,
-        title: "Subticket 1",
-        description: "Subticket 1 description",
-        assignee: "Sakshya P",
-        status: "Open",
-        priority: "High"
-      },
-      {
-        id: 2,
-        title: "Subticket 2",
-        description: "Subticket 2 description",
-        assignee: "Sakshya P",
-        status: "Open",
-        priority: "High"
-      }
-    ]
-  },
-  {
-    id: 3,
-    time: "Feb 04, 10:15",
-    message: "I'm having trouble with the new feature on your site. It's not working as expected and I'm not sure how to fix it. Can you help me troubleshoot? Thanks!",
-    title: "UI Bug",
-    description: "Misalignment in dashboard",
-    assignee: "Aditi V",
-    due: "Next Week",
-    status: "Closed",
-    priority: "Low",
-    profile: "AV",
-    timeline: [
-      {
-        changes: "Harry changed the status to Closed to Open",
-        time: "6 days ago"
-      },
+    const getSubTicketInfofunc = (ticketId) => {
+        return getSubTicketInfo({ ticket_id: ticketId });
+    };
 
-    ],
-    messages: [
-      { author: "Aditi V", time: "Feb 04, 10:15", message: "I'm having trouble with the new feature on your site. It's not working as expected and I'm not sure how to fix it. Can you help me troubleshoot? Thanks!" }
-    ],
-    subtickets: []
-  }
-];
+    const getTicketTimelinefunc = (ticketId) => {
+        return getTicketTimeline({ ticket_id: ticketId });
+    };
 
+    const getTicketMessagesfunc = (ticketId) => {
+        return getTicketMessages({ ticket_id: ticketId });
+    };
 
-const TicketDetails = ( ) => {
-  const { ticketId } = useParams();
+    useEffect(() => {
+        console.log("id = ", ticketId);
 
-  const ticket = tickets.find((t) => t.id === parseInt(ticketId));
+        setIsLoading(true);
 
-  const [editorText, setEditorText] = useState("");  // Stores text from TextEditor
-  const [selectedStatus, setSelectedStatus] = useState("");  // Stores selected status
-  const [finalMessage, setFinalMessage] = useState(null);
+        const fetchData = async () => {
+            try {
+                const [subDetailsRes, subTicketInfoRes, timelineRes, messagesRes] = await Promise.all([
+                    getTicketSubDetailsfunc(ticketId),
+                    getSubTicketInfofunc(ticketId),
+                    getTicketTimelinefunc(ticketId),
+                    getTicketMessagesfunc(ticketId)
+                ]);
 
-  const handleStatusChange = (status) => {
-    if (editorText.trim() !== "") {
-      setFinalMessage({ status, message: editorText });
+                setTicketSubDetails(subDetailsRes.message);
+                setSubTicketInfo(subTicketInfoRes.message);
+                setTicketTimeline(timelineRes.message);
+                setTicketMessages(messagesRes.message);
+
+                setIsLoading(false);
+            } catch (err) {
+                console.log("Error:", err);
+                setIsLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [ticketId]);
+
+    console.log("ticketMessages = ", ticketMessages);
+    console.log("ticketSubDetails = ", ticketSubDetails);
+    console.log("subTicketInfo = ", subTicketInfo);
+    console.log("ticketTimeline = ", ticketTimeline);
+
+    if (isLoading) {
+        return <div>Loading...</div>;
     }
-    setSelectedStatus(status);
-    setEditorText("");
-  };
+
+    // Stores text from TextEditor
+    //   const [selectedStatus, setSelectedStatus] = useState("");  // Stores selected status
+
+    //   const [subticketMessages, setSubticketMessages] = useState([]);
+    //   const handleStatusChange = (status) => {
+    //     if (editorText.trim() !== "") {
+    //       setFinalMessage({ status, message: editorText });
+    //     }
+    //     setSelectedStatus(status);
+    //     setEditorText("");
+    //   };
 
 
-  if (!ticket) return <p className="text-center text-red-600">Ticket not found</p>;
+      if (!ticketMessages) return <p className="text-center text-red-600">Ticket not found</p>;
 
-  return (
-    <div>
-      <Link to="/" className="mt-4 inline-block">
-        <FaArrowLeft className="mr-2" />
-      </Link>
+    return (
+        <div>
+            <Link to="/dashboard" className="mt-4 inline-block">
+                <FaArrowLeft className="mr-2" />
+            </Link>
 
 
-      <div className="flex">
+            <div className="flex">
 
-        <div className="w-3/4 p-2 mt-2">
-          <TicketMessages finalMessage={finalMessage}  />
-          <TextEditor editorText={editorText} setEditorText={setEditorText} setFinalMessage={setFinalMessage} />
+                <div className="w-3/4 p-2 mt-2">
+                    <TicketMessages ticketMessages={ticketMessages} finalMessage={finalMessage} />
+                    <TextEditor editorText={editorText} setEditorText={setEditorText} setFinalMessage={setFinalMessage}/>
+                </div>
+
+                <div className="w-1/4 p-1 flex flex-col gap-2 mt-3">
+                    <TicketSubDetails ticketSubDetails={ticketSubDetails} />
+                    < Subtickets subTicketInfo={subTicketInfo} />
+                    <TicketTimeline ticketTimeline={ticketTimeline} />
+                    {/* <Ticketbuttons handleStatusChange={handleStatusChange} /> */}
+                </div>
+
+            </div>
         </div>
 
-        <div className="w-1/4 p-1 flex flex-col gap-2 mt-3">
-          <TicketSubDetails />
-          < Subtickets />
-          <TicketTimeline />
-          <Ticketbuttons handleStatusChange={handleStatusChange} />
-        </div>
-
-      </div>
-    </div>
-
-  );
+    );
 };
 
 export default TicketDetails;

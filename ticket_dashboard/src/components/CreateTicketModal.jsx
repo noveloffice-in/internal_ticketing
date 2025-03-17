@@ -2,7 +2,7 @@ import React from 'react';
 import { IoClose } from "react-icons/io5";
 import { useState } from 'react';
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useFrappePostCall } from 'frappe-react-sdk';
 
 const departments = [
     'Software',
@@ -49,24 +49,26 @@ const bdmTeams = [
     'Team 3',
 ]
 
-
-
 const CreateTicketModal = ({ onClick, isOpen, isSubticket }) => {
     const [selectedDepartment, setSelectedDepartment] = useState('');
     const [showAlert, setShowAlert] = useState(false);
     const [formData, setFormData] = useState({
-        to: '',
+        assigned_department: '',
         parentTicket: '',
         location: '',
         team: '',
         subject: '',
         message: '',
-        status: 'unassigned',
-        priority: 'medium',
+        status: 'Unassigned Tickets',
+        priority: 'Medium',
         dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
     });
 
-    console.log(selectedDepartment)
+    const { call: createTicket } = useFrappePostCall("internal_ticketing.ticketing_api.create_ticket");
+
+    const createTicketfunc = (formData) => {
+        return createTicket({ form_data: formData });
+    };
 
     useEffect(() => {
         if (isOpen) {
@@ -91,9 +93,11 @@ const CreateTicketModal = ({ onClick, isOpen, isSubticket }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         console.log(formData);
-        
+        createTicketfunc(formData);
         setShowAlert(true);
+
         onClick();
+
     };
 
     return (
@@ -119,7 +123,7 @@ const CreateTicketModal = ({ onClick, isOpen, isSubticket }) => {
                         <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="to">
                             To
                         </label>
-                        <select id="to" name="to" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" defaultValue="" onChange={(e) => { setSelectedDepartment(e.target.value); handleChange(e); }}>
+                        <select id="assigned_department" name="assigned_department" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" defaultValue="" onChange={(e) => { setSelectedDepartment(e.target.value); handleChange(e); }}>
                             <option value="" disabled></option>
                             {departments.map((department, index) => (
                                 <option key={index} value={department.replace(/\s+/g, '-')}>{department}</option>
@@ -182,10 +186,10 @@ const CreateTicketModal = ({ onClick, isOpen, isSubticket }) => {
                             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="priority">
                                 Priority
                             </label>
-                            <select id="priority" name="priority" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" defaultValue="medium" onChange={handleChange}>
-                                <option value="low">Low</option>
-                                <option value="medium">Medium</option>
-                                <option value="high">High</option>
+                            <select id="priority" name="priority" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" defaultValue="Medium" onChange={handleChange}>
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
                             </select>
                         </div>
                     </div>
@@ -204,11 +208,7 @@ const CreateTicketModal = ({ onClick, isOpen, isSubticket }) => {
                         </button>
                     </div>
                 </form>
-                {showAlert && (
-                    <div className="fixed top-0 left-0 right-0 flex justify-center items-center p-4 bg-green-500 text-white font-bold text-center z-[1400] shadow-md">
-                        <span className="font-medium">Success alert!</span> Ticket created successfully!
-                    </div>
-                )}
+
             </div>
         </div>
     );

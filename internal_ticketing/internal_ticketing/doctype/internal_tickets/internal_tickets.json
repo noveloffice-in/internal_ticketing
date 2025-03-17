@@ -14,6 +14,7 @@
   "description",
   "ticket_status",
   "due_date",
+  "priority",
   "ticket_timeline_section",
   "ticket_timeline",
   "approval_section_section",
@@ -126,11 +127,17 @@
    "fieldname": "due_date",
    "fieldtype": "Date",
    "label": "Due Date"
+  },
+  {
+   "fieldname": "priority",
+   "fieldtype": "Select",
+   "label": "Priority",
+   "options": "\nHigh\nMedium\nLow"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-03-12 17:42:10.998743",
+ "modified": "2025-03-14 18:43:28.741792",
  "modified_by": "Administrator",
  "module": "Internal Ticketing",
  "name": "Internal Tickets",

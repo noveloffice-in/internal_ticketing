@@ -18,13 +18,13 @@ const TextEditor = ({ editorText, setEditorText, setFinalMessage }) => {
 
     return (
         <div className="card bg-white mt-4 rounded-md shadow-md border-none relative">
-            <Editor
+            <textarea
                 value={editorText}
-                onTextChange={(e) => {
-                    setEditorText(e.textValue);
+                onChange={(e) => {
+                    setEditorText(e.target.value);
                 }}
                 placeholder="Type a message..."
-                style={{ height: '150px' }}
+                style={{ height: '150px', width: '100%' }}
             />
             {isTyping && (
                 <button
