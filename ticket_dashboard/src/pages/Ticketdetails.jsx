@@ -8,6 +8,7 @@ import TextEditor from "../components/Texteditor";
 import Ticketbuttons from "../components/Ticketbuttons";
 import { useState, useEffect } from "react";
 import { useFrappePostCall } from "frappe-react-sdk";
+import ParentTicket from "../components/ParentTicket";
 
 const TicketDetails = () => {
     const { ticketId } = useParams();
@@ -43,7 +44,6 @@ const TicketDetails = () => {
     };
 
     useEffect(() => {
-        console.log("id = ", ticketId);
 
         setIsLoading(true);
 
@@ -63,7 +63,7 @@ const TicketDetails = () => {
 
                 setIsLoading(false);
             } catch (err) {
-                console.log("Error:", err);
+                console.error("Error:", err);
                 setIsLoading(false);
             }
         };
@@ -71,26 +71,9 @@ const TicketDetails = () => {
         fetchData();
     }, [ticketId]);
 
-    console.log("ticketMessages = ", ticketMessages);
-    console.log("ticketSubDetails = ", ticketSubDetails);
-    console.log("subTicketInfo = ", subTicketInfo);
-    console.log("ticketTimeline = ", ticketTimeline);
-
     if (isLoading) {
         return <div>Loading...</div>;
     }
-
-    // Stores text from TextEditor
-    //   const [selectedStatus, setSelectedStatus] = useState("");  // Stores selected status
-
-    //   const [subticketMessages, setSubticketMessages] = useState([]);
-    //   const handleStatusChange = (status) => {
-    //     if (editorText.trim() !== "") {
-    //       setFinalMessage({ status, message: editorText });
-    //     }
-    //     setSelectedStatus(status);
-    //     setEditorText("");
-    //   };
 
 
       if (!ticketMessages) return <p className="text-center text-red-600">Ticket not found</p>;
@@ -104,16 +87,16 @@ const TicketDetails = () => {
 
             <div className="flex">
 
-                <div className="w-3/4 p-2 mt-2">
-                    <TicketMessages ticketMessages={ticketMessages} finalMessage={finalMessage} />
+                <div className="w-5/6 p-2 mt-2">
+                    <TicketMessages ticketMessages={ticketMessages} />
                     <TextEditor editorText={editorText} setEditorText={setEditorText} setFinalMessage={setFinalMessage}/>
                 </div>
 
-                <div className="w-1/4 p-1 flex flex-col gap-2 mt-3">
+                <div className="w-1/4 p-1 flex flex-col gap-3 mt-3">
                     <TicketSubDetails ticketSubDetails={ticketSubDetails} />
-                    < Subtickets subTicketInfo={subTicketInfo} />
+                    <ParentTicket />
+                    <Subtickets subTicketInfo={subTicketInfo} parentTicketId={ticketId}/>
                     <TicketTimeline ticketTimeline={ticketTimeline} />
-                    {/* <Ticketbuttons handleStatusChange={handleStatusChange} /> */}
                 </div>
 
             </div>

@@ -3,9 +3,10 @@ import { FaTicket, FaTicketSimple, FaCircleCheck, FaRegPaperPlane, FaUserPlus, F
 
 
 
-const Cards = ({ ticketInfo, onClick }) => {
+const Cards = ({ ticketInfo, onClick, activeCard }) => {
+    const isActive = activeCard === ticketInfo.ticket_status;
   return (
-    <div className="bg-white shadow-md rounded-xl p-4 w-[195px] h-[100px] mt-4 cursor-pointer hover:bg-gray-300" onClick={() => onClick(ticketInfo.ticket_status)}>
+    <div className={`bg-white shadow-md rounded-xl p-4 w-[195px] h-[100px] mt-4 cursor-pointer hover:bg-gray-300 ${isActive ? "bg-blue-100" : 'bg-white'}`} onClick={() => onClick(ticketInfo.ticket_status)}>
         <div className='flex items-center justify-between text-gray-600'>
             {ticketInfo.ticket_status}
         </div>

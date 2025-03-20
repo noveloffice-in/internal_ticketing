@@ -7,9 +7,12 @@ import Cards from "../components/Cards";
 import CreateTicketModal from "../components/CreateTicketModal";
 import { FaCircleCheck, FaCircleExclamation } from "react-icons/fa6";
 import { useFrappePostCall } from "frappe-react-sdk";
+import { BiTimeFive } from "react-icons/bi";
+import { BsCalendar } from "react-icons/bs";
 
 
-const Home = ( ) => {
+
+const Home = () => {
   const [ticketCount, setTicketCount] = useState([]);
   const [ticketList, setTicketList] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -17,50 +20,53 @@ const Home = ( ) => {
   const [selectedTicket, setSelectedTicket] = useState("All Tickets");
   const { call: call1 } = useFrappePostCall("internal_ticketing.ticketing_api.get_ticket_count_by_department");
   const { call: call2 } = useFrappePostCall("internal_ticketing.ticketing_api.get_ticket_list");
+  const ticketStatusException = ["Cancelled Tickets"]
+  const [activeCard, setActiveCard] = useState("All Tickets");
 
-  useEffect(()=>{
+  useEffect(() => {
     getTicketCountByDepartment();
     getTicketList();
-  },[])
+  }, [])
 
-  
+
   const openModal = () => {
     setIsModalOpen(true);
   };
-  
+
   const closeModal = () => {
     setIsModalOpen(false);
     getTicketCountByDepartment();
     getTicketList();
   };
 
-  const getTicketCountByDepartment = ()=>{
+  const getTicketCountByDepartment = () => {
     call1({
       department: "Software",
     })
-    .then((res)=>{
-      setTicketCount(Object.values(res['message']));
-    })
-    .catch((err)=>{
-      console.log("Error", err);
-    })
+      .then((res) => {
+        setTicketCount(Object.values(res['message']));
+      })
+      .catch((err) => {
+        console.log("Error", err);
+      })
   }
 
-  const getTicketList = ()=>{
+  const getTicketList = () => {
     call2({
       department: "Software",
     })
-    .then((res)=>{
-      setTicketList(res['message']);
-    })
-    .catch((err)=>{
-      console.log("Error", err);
-    })
+      .then((res) => {
+        setTicketList(res['message']);
+      })
+      .catch((err) => {
+        console.log("Error", err);
+      })
   }
-  
+
 
   const handleCardClick = (ticketStatus) => {
     setSelectedTicket(ticketStatus);
+    setActiveCard(ticketStatus);
   }
 
 
@@ -77,63 +83,95 @@ const Home = ( ) => {
           {isModalOpen && <CreateTicketModal onClick={closeModal} isOpen={isModalOpen} isSubticket={false} />}
         </div>
       </div>
-      
+
       {/* Ticket Cards */}
       <div className='flex gap-4 flex flex-row w-full flex-wrap' >
-          {ticketCount.map((category, index) => (
+        {ticketCount.map((category, index) => (
+          !ticketStatusException.includes(category.ticket_status) && (
             <div key={index}>
-              <Cards ticketInfo={category} onClick={(ticketStatus) => {
+              <Cards ticketInfo={category} activeCard={activeCard} onClick={(ticketStatus) => {
                 handleCardClick(ticketStatus);
-                console.log("ticketStatus:", ticketStatus);
-              }}/>
+                setActiveCard(ticketStatus);
+
+              }} />
             </div>
-          ))}
-        </div>
+          )
+        ))}
+      </div>
 
       {/* Ticket List */}
       <div className="p-4 shadow-2xl rounded-lg bg-white mt-3">
         <div className="flex justify-between items-center px-4">
           <h2 className="text-xl font-bold" >{selectedTicket ? selectedTicket : "All Tickets"}</h2>
-          {/* <div className="flex items-center">
-            <button className="mr-2 p-2 border rounded flex items-center">
-              <FaFilter className="mr-1" /> Filter
-            </button>
-            <button className="p-2 border rounded flex items-center">
-              <FaSort className="mr-1" /> Sort
-            </button>
-          </div> */}
         </div>
 
         <div className="p-4 rounded-lg bg-white cursor-pointer overflow-y-auto  flex flex-col gap-1">
-          {ticketList.length > 0 ? 
+
+          {ticketList.length > 0 ?
             (
-              
+
               (ticketList.map((ticket) => (
                 (selectedTicket === "All Tickets" || ticket.ticket_status === selectedTicket) && (
-                  
-                <Link
-                  key={ticket.name}
-                  to={`/dashboard/tickets/${ticket.name}`} // Navigates to TicketDetails page
-                  className="border-2 border-gray-200 p-4 mb-2 rounded hover:bg-gray-100 flex justify-between items-start"
-                >
-                  <div className="flex ">
-                    {ticket.status === "Open" && <div className="bg-red-100  flex items-center justify-center rounded-md w-7 h-7 mr-4 mt-1"><FaCircleExclamation color='red'/></div>}
-                    {ticket.status === "Working" && <div className="bg-green-100  flex items-center justify-center rounded-md w-7 h-7 mr-4 mt-1"><FaCircleCheck color='green'/></div>}
-                    {ticket.status === "Solved" && <div className="bg-green-100  flex items-center justify-center rounded-md w-7 h-7 mr-4 mt-1"><FaCircleCheck color='green'/></div>}
-                    {ticket.status === "Sent" && <div className="bg-green-100  flex items-center justify-center rounded-md w-7 h-7 mr-4 mt-1"><FaCircleExclamation color='green'/></div>}
-                    {ticket.status === "Unassigned" && <div className="bg-green-100  flex items-center justify-center rounded-md w-7 h-7 mr-4 mt-1"><FaCircleExclamation color='green'/></div>}
-                    {ticket.status === "Overdue" && <div className="bg-red-100  flex items-center justify-center rounded-md w-7 h-7 mr-4 mt-1"><FaCircleExclamation color='red'/></div>}
-                    {ticket.status === "Closed" && <div className="bg-red-100  flex items-center justify-center rounded-md w-7 h-7 mr-4 mt-1"><FaCircleExclamation color='red'/></div>}
-                    <div>
-                      <h3 className="font-bold text-red-600">{ticket.subject}</h3>
-                      <p>{ticket.assigned_to}</p>
+                  searchQuery === "" || ticket.subject.toLowerCase().includes(searchQuery.toLowerCase())
+                ) && (
+
+                  <Link
+                    key={ticket.name}
+                    to={`/dashboard/tickets/${ticket.name}`} // Navigates to TicketDetails page
+                    className="border-2 border-gray-200 p-4 mb-2 rounded hover:bg-gray-100 flex justify-between items-start"
+                  >
+                    <div className="flex ">
+                      {ticket.status === "Open" && <div className="bg-red-100  flex items-center justify-center rounded-md w-7 h-7 mr-4 mt-1"><FaCircleExclamation color='red' /></div>}
+                      {ticket.status === "Working" && <div className="bg-green-100  flex items-center justify-center rounded-md w-7 h-7 mr-4 mt-1"><FaCircleCheck color='green' /></div>}
+                      {ticket.status === "Solved" && <div className="bg-green-100  flex items-center justify-center rounded-md w-7 h-7 mr-4 mt-1"><FaCircleCheck color='green' /></div>}
+                      {ticket.status === "Sent" && <div className="bg-green-100  flex items-center justify-center rounded-md w-7 h-7 mr-4 mt-1"><FaCircleExclamation color='green' /></div>}
+                      {ticket.status === "Unassigned" && <div className="bg-green-100  flex items-center justify-center rounded-md w-7 h-7 mr-4 mt-1"><FaCircleExclamation color='green' /></div>}
+                      {ticket.status === "Overdue" && <div className="bg-red-100  flex items-center justify-center rounded-md w-7 h-7 mr-4 mt-1"><FaCircleExclamation color='red' /></div>}
+                      {ticket.status === "Closed" && <div className="bg-red-100  flex items-center justify-center rounded-md w-7 h-7 mr-4 mt-1"><FaCircleExclamation color='red' /></div>}
+                      <div>
+                        <h3 className="font-bold text-red-600">{ticket.subject}</h3>
+                        <p>{ticket.assigned_to}</p>
+                        <p className="text-center w-fit text-sm flex items-center gap-1 mt-2">
+                          <BiTimeFive />
+                          {(() => {
+                            const date = new Date(ticket.creation);
+                            const formattedDate = date.toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric'
+                            });
+                            const time = ticket.creation.split(' ')[1].split('.')[0];
+                            return `${formattedDate} ${time}`;
+                          })()}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-red-600">Due: {new Date(ticket.due_date).toLocaleDateString('en-GB')}</p>
-                    <p className="text-gray-500">{ticket.ticket_status}</p>
-                  </div>
-                </Link>
+                    <div className="flex flex-col gap-2 items-end">
+                      <p className={`rounded-2xl text-center py-1 px-4 w-fit text-sm ${ticket.ticket_status === "Open" ? "bg-red-100 text-red-600" :
+                        ticket.ticket_status === "Working Tickets" ? "bg-green-100 text-green-600" :
+                          ticket.ticket_status === "Solved Tickets " ? "bg-green-100 text-green-600" :
+                            ticket.ticket_status === "Sent Tickets" ? "bg-purple-100 text-purple-600" :
+                              ticket.ticket_status === "Unassigned Tickets" ? "bg-orange-100 text-orange-600" :
+                                ticket.ticket_status === "Overdue Tickets" ? "bg-red-100 text-red-600" :
+                                  ticket.ticket_status === "Closed Tickets" ? "bg-gray-100 text-gray-600" :
+                                    "bg-pink-100 text-pink-600"}`}>
+                        {ticket.ticket_status.split(' ')[0]}
+                      </p>
+
+                      <div className="text-center w-fit text-sm flex items-center gap-1">
+                        <BsCalendar />
+                        <p className="text-sm">Due: {new Date(ticket.due_date).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric'
+                        })} </p>
+                      </div>
+
+
+
+
+                    </div>
+                  </Link>
 
 
                 )

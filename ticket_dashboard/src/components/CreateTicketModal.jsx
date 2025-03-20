@@ -1,57 +1,17 @@
 import React from 'react';
 import { IoClose } from "react-icons/io5";
-import { useState } from 'react';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useFrappePostCall } from 'frappe-react-sdk';
 
-const departments = [
-    'Software',
-    'Pre-Sales',
-    'Marketing',
-    'Customer Support',
-    'Human Resources',
-    'Finance',
-    'Legal',
-    'Administration',
-    'BDM',
-    'Electrical',
-    'Facility',
-    'IT',
-    'Maintenance',
-    'Security',
-    'Other'
-]
-
-const departmentsWithLocation = [
-    'Electrical',
-    'Facility',
-    'IT',
-    'Maintenance',
-    'Security',
-    'Other'
-];
-
-const location = [
-    'NOM',
-    'NTP',
-    'NOW',
-    'NOQ',
-    'NBP'
-]
-
-const departmentWithTeams = [
-    'BDM'
-]
-
-const bdmTeams = [
-    'Team 1',
-    'Team 2',
-    'Team 3',
-]
-
-const CreateTicketModal = ({ onClick, isOpen, isSubticket }) => {
+const CreateTicketModal = ({ onClick, isOpen, isSubticket, parentTicketId }) => {
+    const [departments, setDepartments] = useState([]);
+    const [departmentWithTeams, setDepartmentWithTeams] = useState([]);
+    const [teams, setTeams] = useState([]);
+    const [assignedToOptions, setAssignedToOptions] = useState([]);
+    const [location, setLocation] = useState([]);
+    const [departmentsWithLocation, setDepartmentsWithLocation] = useState([]);
     const [selectedDepartment, setSelectedDepartment] = useState('');
-    const [showAlert, setShowAlert] = useState(false);
+    
     const [formData, setFormData] = useState({
         assigned_department: '',
         parentTicket: '',
@@ -63,6 +23,20 @@ const CreateTicketModal = ({ onClick, isOpen, isSubticket }) => {
         priority: 'Medium',
         dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
     });
+
+    const { call: getAllDataforCreateTicket } = useFrappePostCall("internal_ticketing.ticketing_api.get_all_data_for_create_ticket");
+
+    useEffect(() => {
+        getAllDataforCreateTicket({ department_name: selectedDepartment }).then((data) => {
+            console.log("Data:", data);
+            setDepartments(data.message.departments);
+            setDepartmentWithTeams(data.message.departments_with_teams);
+            setLocation(data.message.locations);
+            setDepartmentsWithLocation(data.message.departments_with_location);
+            setTeams(data.message.teams);
+            setAssignedToOptions(data.message.assigned_to);
+        });
+    }, []);
 
     const { call: createTicket } = useFrappePostCall("internal_ticketing.ticketing_api.create_ticket");
 
@@ -84,18 +58,24 @@ const CreateTicketModal = ({ onClick, isOpen, isSubticket }) => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prevState => ({
-            ...prevState,
-            [name]: value
-        }));
+        if (name === 'assignedTo') {
+            const email = assignedToOptions[value].email;
+            setFormData(prevState => ({
+                ...prevState,
+                [name]: email
+            }));
+        } else {
+            setFormData(prevState => ({
+                ...prevState,
+                [name]: value
+            }));
+        }
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
         console.log(formData);
         createTicketfunc(formData);
-        setShowAlert(true);
-
         onClick();
 
     };
@@ -114,48 +94,65 @@ const CreateTicketModal = ({ onClick, isOpen, isSubticket }) => {
                                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="parentTicket">
                                     Parent Ticket
                                 </label>
-                                <input type="text" id="parentTicket" name="parentTicket" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" readOnly />
-                                {console.log("Parent Ticket input rendered")}
+                                <input type="text" id="parentTicket" name="parentTicket" value={parentTicketId} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" readOnly />
+                                {console.log("Parent Ticket input rendered with ID:", parentTicketId)}
                             </div>
                         </div>
                     )}
+
                     <div className="mb-4">
                         <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="to">
                             To
                         </label>
-                        <select id="assigned_department" name="assigned_department" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" defaultValue="" onChange={(e) => { setSelectedDepartment(e.target.value); handleChange(e); }}>
+                        <select id="assigned_department" name="assigned_department" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" defaultValue="" onChange={(e) => { setSelectedDepartment(e.target.value); handleChange(e); }} required onInvalid={(e) => e.target.setCustomValidity('Please select a department')} onInput={(e) => e.target.setCustomValidity('')}>
                             <option value="" disabled></option>
                             {departments.map((department, index) => (
-                                <option key={index} value={department.replace(/\s+/g, '-')}>{department}</option>
+                                <option key={index} value={department}>{department}</option>
                             ))}
                         </select>
                     </div>
 
                     {departmentsWithLocation.includes(selectedDepartment) && (
-                        <div className="mb-4">
+                        <div className="mb-4 w-1/2 pr-2">
                             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="location">
                                 Location
                             </label>
                             <select id="location" name="location" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" defaultValue="" onChange={handleChange}>
                                 <option value="" disabled></option>
                                 {location.map((loc, index) => (
-                                    <option key={index} value={loc}>{loc}</option>
+                                    <option key={index} value={loc}></option>
                                 ))}
                             </select>
                         </div>
                     )}
-
+                    
                     {departmentWithTeams.includes(selectedDepartment) && (
-                        <div className="mb-4">
-                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="team">
-                                Team
-                            </label>
-                            <select id="team" name="team" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" defaultValue="" onChange={handleChange}>
-                                <option value="" disabled></option>
-                                {bdmTeams.map((team, index) => (
-                                    <option key={index} value={team}>{team}</option>
-                                ))}
-                            </select>
+                        <div className="mb-4 flex">
+                            <div className="w-1/2 pr-2">
+                                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="team">
+                                    Team
+                                </label>
+                                <select id="team" name="team" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" defaultValue="" onChange={handleChange}>
+                                    <option value="" disabled></option>
+                                    {teams[selectedDepartment].map((team, index) => (
+                                        <option key={index} value={team}>{team}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="w-1/2 pl-2">
+                                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="assignedTo">
+                                    Assigned To
+                                </label>
+                                <select id="assignedTo" name="assignedTo" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" defaultValue="" onChange={(e) => {handleChange(e)}}>
+                                    
+                                    <option value="" disabled></option>
+                                    {Object.keys(assignedToOptions).map((option, index) => (
+                                        assignedToOptions[option].department === selectedDepartment && (
+                                            <option key={index} value={option}>{option}</option>
+                                        )
+                                    ))}
+                                </select>
+                            </div>
                         </div>
                     )}
 
@@ -163,14 +160,14 @@ const CreateTicketModal = ({ onClick, isOpen, isSubticket }) => {
                         <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="subject">
                             Subject
                         </label>
-                        <input type="text" id="subject" name="subject" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" onChange={handleChange} />
+                        <input type="text" id="subject" name="subject" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" onChange={handleChange} required onInvalid={(e) => e.target.setCustomValidity('Please enter a subject')} onInput={(e) => e.target.setCustomValidity('')} />
                     </div>
 
                     <div className="mb-4">
                         <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="message">
                             Message
                         </label>
-                        <textarea id="message" name="message" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="4" onChange={handleChange}></textarea>
+                        <textarea id="message" name="message" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="4" onChange={handleChange} required onInvalid={(e) => e.target.setCustomValidity('Please enter a message')} onInput={(e) => e.target.setCustomValidity('')}></textarea>
                     </div>
 
                     <div className="mb-4 flex flex-wrap">

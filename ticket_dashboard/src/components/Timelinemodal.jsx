@@ -26,12 +26,18 @@ const Modal = ({ onClose, ticketTimeline }) => {
                             return (
                                 <div key={index} className="flex space-x-3 relative">
                                     {/* Timeline Marker (Bullet & Line) */}
-                                    <div className="flex flex-col items-center absolute left-0 top-0.5 mt-2">
+                                    
+
+                                    <div className="flex flex-col items-center relative mt-2">
                                         {/* Bullet Point */}
-                                        <div className="w-2 h-2  rounded-full border border-gray-400 relative">
-                                            <div className="w-1 h-1 bg-gray-500 rounded-full absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>
+                                        <div className="w-2 h-2 bg-gray-400 rounded-full relative">
+                                        <div className="w-1 h-1 bg-gray-500 rounded-full absolute top-1\2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>
                                         </div>
 
+                                        {/* Connecting Line */}
+                                        {index < ticketTimeline.length - 1 && (
+                                            <div className="w-px flex-grow bg-gray-400 absolute top-0.5" style={{ height: 'calc(100% + 0.5rem)' }}></div>
+                                        )}
                                     </div>
 
                                     {/* Timeline Content */}

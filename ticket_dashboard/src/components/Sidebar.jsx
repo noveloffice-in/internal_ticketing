@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { FaBars, FaUser, FaSignOutAlt } from "react-icons/fa";
+import { FaBars, FaHistory } from "react-icons/fa";
+import { PiTicketBold } from "react-icons/pi";
 
 export default function Sidebar({ isOpen, toggleSidebar }) {
     return (
@@ -16,9 +17,8 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
                 {/* Sidebar Links */}
                 
                 {[
-                    { icon: FaHistory, text: "Login", path: "/login" },
-                    { icon: FaUser, text: "Profile", path: "/profile" },
-                    { icon: FaSignOutAlt, text: "Logout", path: "/logout" },
+                    { icon: FaHistory, text: "Ticket History", path: "/dashboard/tickets-history" },
+                    { icon: PiTicketBold , text: "ticket", path: "/dashboard/ticket" }
                 ].map((item, index) => (
                     <Link
                         key={index}
