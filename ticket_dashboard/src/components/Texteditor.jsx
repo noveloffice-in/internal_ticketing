@@ -16,12 +16,12 @@ const TextEditor = ({ editorText, setEditorText }) => {
 
     const handleSendMessage = () => {
         if (editorText.trim() !== "") {
+            console.log("editorText", editorText);
             sendMessage({
                 ticket_id: ticketId,
                 message: editorText,
                 current_user: currentUser
             }).then((response) => {
-                
             }).catch((error) => {
                 console.error("Error sending message:", error);
             });
@@ -39,6 +39,12 @@ const TextEditor = ({ editorText, setEditorText }) => {
                 }}
                 placeholder="Type a message..."
                 style={{ height: '150px', width: '100%' }}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                    }
+                }}
             />
             {isTyping && (
                 <button

@@ -1,59 +1,80 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { useFrappeFileUpload, useFrappePostCall } from 'frappe-react-sdk';
 
-const Buttons = ({ handleStatusChange }) => {
-    const [dropdownVisible, setDropdownVisible] = useState(false);
-    const navigate = useNavigate();
+const TicketButtons = ({ fileUrl, setFileUrl }) => {
+    const { ticketId } = useParams();
+    const [isUploading, setIsUploading] = useState(false);
+    const { upload } = useFrappeFileUpload();
+    const { call: closeTicket } = useFrappePostCall("internal_ticketing.ticketing_api.close_ticket");
+
+    const handleFileUpload = async (file) => {
+        if (!file) return;
+
+        setIsUploading(true);
+        try {
+            const fileArgs = {
+                isPrivate: 0,
+                folder: 'Home',
+                doctype: 'Internal Tickets',
+                docname: ticketId,
+                file_url: ""
+            };
+
+            // Remove the progress callback to avoid CORS issues
+            const response = await upload(file, fileArgs);
+
+
+            setFileUrl(response.file_url);
+            console.log('File uploaded successfully', response.file_url);
+
+        } catch (error) {
+            console.error('Error uploading file:', error);
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+
 
     return (
         <div>
-            <div className="flex gap-2 justify-center mt-1">
+            <div className="flex gap-2 mt-1">
                 <button
-                    className="text-black text-md border border-purple-500 rounded-md px-8 py-2"
-                    onClick={() => navigate('/')}
+                    className="text-white text-md bg-purple-500 rounded-md px-8 py-2 flex items-center"
+                    onClick={() => {
+                        const fileInput = document.createElement('input');
+                        fileInput.type = 'file';
+                        fileInput.onchange = (e) => {
+                            const file = e.target.files[0];
+                            if (file) {
+                                handleFileUpload(file);
+                                console.log('File selected:', file.name);
+                            }
+                        };
+                        fileInput.click();
+                    }}
+                    disabled={isUploading}
+                >
+                    {isUploading ? 'Uploading...' : 'Attach File'}
+                </button>
+
+                <button
+                    className="text-black text-md border border-purple-500 rounded-md px-5 py-2"
+                    onClick={() => {
+                        const closeTicket = {
+                            ticket_id: ticketId,
+                            status: 'Closed'
+                        }
+                        console.log(closeTicket);
+                    }}
                 >
                     Close Ticket
                 </button>
-                
-                <div className="relative inline-block">
-                    <button
-                        className="text-white text-md bg-purple-500 rounded-md px-8 py-2 flex items-center"
-                        onClick={() => setDropdownVisible(!dropdownVisible)}
-                    >
-                        Change Status
-                        <span className="ml-2">{dropdownVisible ? '▼' : '▲'}</span>
-                    </button>
 
-                    {dropdownVisible && (
-                        <div className="absolute bottom-full mb-2 right-0 w-80 bg-white border border-gray-300 rounded-md shadow-lg">
-                            <ul className="py-1">
-                                {[
-                                    'Open Ticket',
-                                    'Working Ticket',
-                                    'On Hold Ticket',
-                                    'Solved Ticket',
-                                    'Unassigned Ticket',
-                                    'Cancel Ticket',
-                                    'Needs Approval'
-                                ].map((status, index) => (
-                                    <li
-                                        key={index}
-                                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                                        onClick={() => {
-                                            handleStatusChange(status);
-                                            setDropdownVisible(false);
-                                        }}
-                                    >
-                                        {status}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-                </div>
             </div>
         </div>
     );
 };
 
-export default Buttons;
+export default TicketButtons;

@@ -24,7 +24,7 @@ const TicketTimeline = ({ ticketTimeline }) => {
         <div>
             <div className="bg-white p-3 shadow-md rounded-2xl w-full">
                 <div className="flex justify-between items-center">
-                    <p className="text-gray-800 font-semibold text-lg">Ticket Timeline :</p>
+                    <p className="text-md text-gray-500 font-bold">Ticket Timeline</p>
                     <span
                         className="text-gray-400 cursor-pointer"
                         onClick={() => setShowTimeline(true)}
@@ -34,7 +34,7 @@ const TicketTimeline = ({ ticketTimeline }) => {
                     {showTimeline && <Timelinemodal onClose={() => setShowTimeline(false)} ticketTimeline={ticketTimeline} />}
                 </div>
 
-                <div className="mt-3 overflow-y-auto max-h-30 scrollbar-thin" style={{ maxHeight: '200px' }}>
+                <div className="mt-3 overflow-y-auto max-h-30 scrollbar-thin" style={{ maxHeight: '100px' }}>
                     {ticketTimeline.length > 0 ? (
                         ticketTimeline.map((entry, index) => {
                             return (

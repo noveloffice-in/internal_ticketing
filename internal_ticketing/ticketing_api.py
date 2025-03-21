@@ -1,8 +1,23 @@
 import frappe
 
 @frappe.whitelist()
-def get_ticket_count_by_department(department: str):
+def get_user_department(user_id: str):
+    user = frappe.get_list("User", filters={"name": user_id}, pluck="department")
+    return user[0]
+
+@frappe.whitelist()
+def get_user_icon(user_id: str):
+    user_query = """
+        SELECT  CONCAT(UPPER(LEFT(first_name, 1)), UPPER(LEFT(last_name, 1))) AS profile
+        FROM `tabUser` 
+        WHERE name = %s
+        """
     
+    user = frappe.db.sql(user_query, user_id, as_dict=True)
+    return user
+
+@frappe.whitelist()
+def get_ticket_count_by_department(department: str):
     if not department:
         return {"error": "Department is required"}
 
@@ -55,7 +70,8 @@ def get_ticket_list():
             users.full_name as assigned_to, 
             tickets.ticket_status, 
             tickets.due_date,
-            tickets.creation
+            tickets.creation,
+            tickets.priority
         FROM 
             `tabInternal Tickets` tickets
         LEFT JOIN 
@@ -64,6 +80,8 @@ def get_ticket_list():
             tickets.assigned_to = users.name
         WHERE 
             tickets.assigned_department = %s
+        AND
+            DATEDIFF(NOW(), tickets.creation) <= 7
         ORDER BY 
             tickets.creation DESC
         """
@@ -81,6 +99,7 @@ def create_ticket(form_data):
     parent_ticket = form_data['parentTicket']
     location = form_data['location']
     team = form_data['team']
+    assigned_to = form_data['assignedTo']
 
     ticket = frappe.new_doc("Internal Tickets")
     ticket.assigned_department = assigned_department
@@ -92,7 +111,9 @@ def create_ticket(form_data):
     ticket.parent_ticket = parent_ticket
     ticket.location = location
     ticket.team = team
+    ticket.assigned_to = assigned_to
     ticket.save()
+    
     return {"success": "Ticket created successfully"}
 
 @frappe.whitelist()
@@ -123,9 +144,11 @@ def get_ticket_sub_details(ticket_id):
 @frappe.whitelist()
 def get_sub_ticket_info(ticket_id):
     query = """
-        SELECT name, subject, ticket_status, creation, assigned_to, due_date
-        FROM `tabInternal Tickets`
-        WHERE parent_ticket = %s
+        SELECT t.name, t.subject, t.ticket_status, t.creation, 
+               t.assigned_to, u.full_name as assigned_to_name, t.due_date
+        FROM `tabInternal Tickets` t
+        LEFT JOIN `tabUser` u ON t.assigned_to = u.name
+        WHERE t.parent_ticket = %s
     """
     result = frappe.db.sql(query, ticket_id, as_dict=True)
 
@@ -288,6 +311,25 @@ def update_ticket_department(ticket_id, department):
     except Exception as e:
         return {"error": str(e)}
 
+@frappe.whitelist()
+def get_parent_ticket(ticket_id):
+    query = """
+        SELECT parent_ticket    
+        FROM `tabInternal Tickets`
+        WHERE name = %s
+    """
+
+    query2 = """
+        SELECT t.name, t.subject, t.ticket_status, t.creation, 
+               t.assigned_to, u.full_name as assigned_to_name, t.due_date
+        FROM `tabInternal Tickets` t
+        LEFT JOIN `tabUser` u ON t.assigned_to = u.name
+        WHERE t.name = %s
+    """
+    result = frappe.db.sql(query, ticket_id, as_dict=True)
+    result2 = frappe.db.sql(query2, result[0].get('parent_ticket'), as_dict=True)
+    return result2
+    
 @frappe.whitelist()
 def update_ticket_assignee(ticket_id, assignee):
     if not ticket_id or not assignee:

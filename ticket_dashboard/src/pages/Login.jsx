@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useFrappeAuth } from 'frappe-react-sdk';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Login = () => {
-    const { currentUser, login, logout, updateCurrentUser, error, isLoading } = useFrappeAuth();
+    const { currentUser, login, logout, updateCurrentUser, error, isLoading, getUserCookie } = useFrappeAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+    const from = location.state?.from?.pathname || '/dashboard';
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -16,24 +18,26 @@ const Login = () => {
 
     const [loginError, setLoginError] = useState('');
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoginError('');
 
-        login({
-            username: email,
-            password: password
-        }).then((res) => {
-            setLoginError(undefined);
-            console.log("res", res);
-            navigate('/dashboard');
-        }).catch((err) => {
+        try {
+            await login({
+                username: email.trim(), // Trim whitespace
+                password: password
+            });
+            // Clear sensitive data
+            setPassword('');
+            navigate(from, { replace: true });
+        } catch (err) {
             setLoginError(err?.message || 'Login Failed');
-        });
+        }
     };
 
     useEffect(() => {
         if (!isLoading && currentUser) {
-            navigate('/dashboard');
+            navigate(from);
             console.log('currentUser', currentUser);
         }
     }, [currentUser, isLoading, navigate]);
@@ -104,3 +108,5 @@ const Login = () => {
 };
 
 export default Login;
+
+

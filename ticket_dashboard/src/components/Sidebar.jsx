@@ -11,14 +11,15 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
                 {/* Toggle Sidebar Button */}
                 <FaBars
                     onClick={toggleSidebar}
-                    className="cursor-pointer font-bold text-2xl text-black"
+                    className="cursor-pointer font-bold text-black"
+                    size={30}
                 />
 
                 {/* Sidebar Links */}
                 
                 {[
                     { icon: FaHistory, text: "Ticket History", path: "/dashboard/tickets-history" },
-                    { icon: PiTicketBold , text: "ticket", path: "/dashboard/ticket" }
+                    { icon: PiTicketBold , text: "View Ticket", path: "/dashboard/ticket" }
                 ].map((item, index) => (
                     <Link
                         key={index}

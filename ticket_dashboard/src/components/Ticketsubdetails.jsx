@@ -69,11 +69,9 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
     }
 
     const handleAssigneeChange = (assignee) => {
-        console.log("assignee:", assignee);
         setTicketAssignee(assignee.full_name);
         update_ticket_assignee({ ticket_id: ticketId, assignee: assignee.email })
             .then((response) => {
-                console.log("response:", response);
             })
             .catch((error) => {
                 console.error("Error updating assignee:", error);
@@ -116,14 +114,14 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
         <div className="flex flex-col items-start p-4 border rounded-2xl shadow-md bg-white w-full">
             {ticketSubDetails.map((subdetails, index) => (
 
-                <div key={index} className="mb-2 w-full">
+                <div key={index} className=" w-full">
 
                     <div className="flex items-center mb-4 flex-wrap w-full">
                         <div className="w-10 h-10 rounded-full flex items-center justify-center text-base mr-2  text-white bg-[rgb(138,89,226,0.28)]">
                             {subdetails.profile}
                         </div>
                         <div>
-                            <p className="font-bold">{subdetails.full_name}</p>
+                            <p className="text-md text-gray-500 font-bold">{subdetails.full_name}</p>
                             <p className="text-sm text-gray-500">{subdetails.designation}</p>
                         </div>
                     </div>
@@ -133,9 +131,8 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                         <span className="ml-2 cursor-pointer text-blue-500">
                             <CiEdit onClick={() => setShowAssignee(!showAssignee)} className="text-black" />
                             {showAssignee && (
-                            <div className="flex relative">
+                            <div className="flex relative z-10">
                                 <ul className="absolute top-full right-0 bg-white border border-gray-300 rounded-md shadow-lg w-40">
-                                    {console.log("assigneeList:", assigneeList)}
                                     {assigneeList.map((assignee, index) => (
                                         <li key={index} className="px-4 py-2 hover:bg-gray-100 cursor-pointer" onClick={() => {
                                             handleAssigneeChange(assignee);
@@ -155,7 +152,7 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                         <span className="ml-2 cursor-pointer text-blue-500">
                             <CiEdit onClick={() => setShowDepartment(!showDepartment)} className="text-black" />
                             {showDepartment && (
-                                <div className="flex relative">
+                                <div className="flex relative z-10">
                                     <ul className="absolute top-full right-0 bg-white border border-gray-300 rounded-md shadow-lg w-40">
                                         {departmentList.map((department, index) => (
                                             <li key={index} className="px-4 py-2 hover:bg-gray-100 cursor-pointer" onClick={() => {

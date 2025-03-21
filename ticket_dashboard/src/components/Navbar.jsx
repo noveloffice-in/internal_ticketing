@@ -1,13 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaUserCircle, FaBell } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useFrappeAuth } from "frappe-react-sdk";
 import { useNavigate } from "react-router-dom";
-
+import Cookies from "js-cookie";
+import { useFrappePostCall } from "frappe-react-sdk";
 export default function Navbar({ toggleSidebar }) {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const { logout } = useFrappeAuth();
     const navigate = useNavigate();
+    const user_id = Cookies.get('user_id');
+    const { call: getUserIcon } = useFrappePostCall("internal_ticketing.ticketing_api.get_user_icon");
+    const [user_icon, setUserIcon] = useState(null);
+    useEffect(() => {
+        console.log("user_id:", user_id);
+        getUserIcon({
+            user_id: user_id
+        }).then((res) => {
+            const user_icon = res.message[0].profile;
+            setUserIcon(user_icon);
+        })
+    }, [user_id])
 
     const handleLogout = () => {
         logout();
@@ -20,8 +33,9 @@ export default function Navbar({ toggleSidebar }) {
             <div className="flex items-center justify-between">
                 {/* Logo */}
                 <div className="text-lg text-black">
-
-                    <span className="font-bold text-black">MyLogo</span>
+                    <Link to="/dashboard" className="text-black">
+                        <span className="font-bold text-black">MyLogo</span>
+                    </Link>
                 </div>
 
                 {/* Profile Icons */}
@@ -34,7 +48,9 @@ export default function Navbar({ toggleSidebar }) {
                         className="text-gray-600 text-2xl p-2 relative"
                         onClick={() => setDropdownOpen(!dropdownOpen)}
                     >
-                        <FaUserCircle />
+                        <div className="w-10 h-10 text-center rounded-full flex items-center justify-center text-base text-white bg-blue-400 mr-2">
+                            {user_icon}
+                        </div>
                     </button>
 
                     {/* Dropdown Menu */}

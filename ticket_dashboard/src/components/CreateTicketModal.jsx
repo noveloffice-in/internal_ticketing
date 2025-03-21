@@ -14,13 +14,14 @@ const CreateTicketModal = ({ onClick, isOpen, isSubticket, parentTicketId }) => 
     
     const [formData, setFormData] = useState({
         assigned_department: '',
-        parentTicket: '',
+        parentTicket: parentTicketId || '',
         location: '',
         team: '',
         subject: '',
         message: '',
         status: 'Unassigned Tickets',
         priority: 'Medium',
+        assignedTo: 'unassigned@noveloffice.in',
         dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
     });
 
@@ -38,11 +39,16 @@ const CreateTicketModal = ({ onClick, isOpen, isSubticket, parentTicketId }) => 
         });
     }, []);
 
-    const { call: createTicket } = useFrappePostCall("internal_ticketing.ticketing_api.create_ticket");
+    useEffect(() => {
+        if (isSubticket && parentTicketId) {
+            setFormData(prevState => ({
+                ...prevState,
+                parentTicket: parentTicketId
+            }));
+        }
+    }, [isSubticket, parentTicketId]);
 
-    const createTicketfunc = (formData) => {
-        return createTicket({ form_data: formData });
-    };
+    const { call: createTicket } = useFrappePostCall("internal_ticketing.ticketing_api.create_ticket");
 
     useEffect(() => {
         if (isOpen) {
@@ -58,6 +64,7 @@ const CreateTicketModal = ({ onClick, isOpen, isSubticket, parentTicketId }) => 
 
     const handleChange = (e) => {
         const { name, value } = e.target;
+        console.log(name, value);
         if (name === 'assignedTo') {
             const email = assignedToOptions[value].email;
             setFormData(prevState => ({
@@ -75,9 +82,12 @@ const CreateTicketModal = ({ onClick, isOpen, isSubticket, parentTicketId }) => 
     const handleSubmit = (e) => {
         e.preventDefault();
         console.log(formData);
-        createTicketfunc(formData);
-        onClick();
-
+        createTicket({ form_data: formData }).then((data) => {
+            console.log("Ticket created:", data);
+            onClick();
+        }).catch((error) => {
+            console.error("Error creating ticket:", error);
+        });
     };
 
     return (
@@ -94,8 +104,8 @@ const CreateTicketModal = ({ onClick, isOpen, isSubticket, parentTicketId }) => 
                                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="parentTicket">
                                     Parent Ticket
                                 </label>
-                                <input type="text" id="parentTicket" name="parentTicket" value={parentTicketId} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" readOnly />
-                                {console.log("Parent Ticket input rendered with ID:", parentTicketId)}
+                                <input type="text" id="parentTicket" name="parentTicket" value={parentTicketId} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" onChange={handleChange} onInput={(e) => e.target.setCustomValidity('')} readOnly />
+                                
                             </div>
                         </div>
                     )}

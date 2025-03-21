@@ -7,6 +7,9 @@ export default {
   theme: {
     extend: {
       display: ['focus-group'],
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+      },
     },
   },
   plugins: [],
