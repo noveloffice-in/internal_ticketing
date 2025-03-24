@@ -5,14 +5,14 @@ import { PiTicketBold } from "react-icons/pi";
 export default function Sidebar({ isOpen, toggleSidebar }) {
     return (
         <div
-            className={`bg-white box-shadow-lg text-black overflow-y-auto flex flex-col h-full z-[1200] fixed top-0 left-0 transition-all duration-300 ${isOpen ? "w-[270px]" : "w-[60px]"}`}
+            className={`bg-white box-shadow-lg text-black overflow-y-auto flex flex-col h-full z-[1200] fixed top-4 left-0 transition-all duration-300 ${isOpen ? "w-[270px]" : "w-[60px]"}`}
         >
             <nav className="flex flex-col gap-4 p-4">
                 {/* Toggle Sidebar Button */}
                 <FaBars
                     onClick={toggleSidebar}
                     className="cursor-pointer font-bold text-black"
-                    size={30}
+                    size={20}
                 />
 
                 {/* Sidebar Links */}

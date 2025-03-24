@@ -28,13 +28,15 @@ export default function Navbar({ toggleSidebar }) {
     };
 
     return (
-        <div className="bg-white shadow-md flex flex-col w-full box-border flex-shrink-0 sticky top-0 left-auto right-0 z-[1100] p-4">
+        <div className="bg-white shadow-md flex flex-col w-full box-border flex-shrink-0 sticky top-0 left-auto right-0 z-[1100] p-3">
             {/* Navbar Content */}
             <div className="flex items-center justify-between">
                 {/* Logo */}
                 <div className="text-lg text-black">
                     <Link to="/dashboard" className="text-black">
-                        <span className="font-bold text-black">MyLogo</span>
+                        <span className="font-bold text-black">
+                            <img src="http://10.80.4.63/files/novel%20logo.webp" alt="logo" className="w-12 h-12" />
+                        </span>
                     </Link>
                 </div>
 
@@ -48,14 +50,14 @@ export default function Navbar({ toggleSidebar }) {
                         className="text-gray-600 text-2xl p-2 relative"
                         onClick={() => setDropdownOpen(!dropdownOpen)}
                     >
-                        <div className="w-10 h-10 text-center rounded-full flex items-center justify-center text-base text-white bg-blue-400 mr-2">
+                        <div className="w-10 h-10 text-center rounded-full flex items-center justify-center text-base text-white bg-[rgb(24,161,161)] mr-2">
                             {user_icon}
                         </div>
                     </button>
 
                     {/* Dropdown Menu */}
                     {dropdownOpen && (
-                        <div className="absolute right-2 top-10 w-40 bg-white shadow-lg rounded-md border-2 border-gray-200 ">
+                        <div className="absolute right-4 top-12 w-40 bg-white shadow-lg rounded-md border-2 border-gray-200 ">
                             <ul className="text-gray-700 flex flex-col gap-2">
                                 <li className="px-4 py-3 hover:bg-gray-200 cursor-pointer" onClick={handleLogout}>
                                     Logout

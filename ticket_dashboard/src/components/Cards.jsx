@@ -9,7 +9,7 @@ const Cards = ({ ticketInfo, onClick, activeCard }) => {
     const isActive = activeCard === ticketInfo.ticket_status;
 
     return (
-        <div className={`shadow-md rounded-xl p-4 w-[195px] h-[100px] mt-4 cursor-pointer hover:bg-gray-300 ${isActive ? "bg-blue-200" : 'bg-white'}`} onClick={() => onClick(ticketInfo.ticket_status)}>
+        <div className={`shadow-md rounded-xl p-4 w-[195px] h-[100px] mt-4 cursor-pointer hover:bg-[rgb(142,189,189)] ${isActive ? "bg-[rgb(177,216,216)]" : 'bg-white'}`} onClick={() => onClick(ticketInfo.ticket_status)}>
             <div className='flex items-center justify-between text-gray-600'>
                 {ticketInfo.ticket_status}
             </div>

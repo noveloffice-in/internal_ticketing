@@ -113,31 +113,33 @@ def create_ticket(form_data):
     ticket.team = team
     ticket.assigned_to = assigned_to
     ticket.save()
-    
+    frappe.publish_realtime('ticket_creation', {'ticket_id': ticket.name})
     return {"success": "Ticket created successfully"}
 
 @frappe.whitelist()
 def get_ticket_sub_details(ticket_id):
     query = """
-        SELECT assigned_to, due_date, ticket_status, priority, creation, assigned_department
+        SELECT assigned_to, due_date, ticket_status, priority, creation, assigned_department, owner
         FROM `tabInternal Tickets`
         WHERE name = %s
     """
     result = frappe.db.sql(query, ticket_id, as_dict=True)
 
     if result:
-        assigned_to = result[0].get('assigned_to')
-        if assigned_to:
+        created_by = result[0].get('owner')
+        if created_by:
             user_query = """
                 SELECT designation, CONCAT(UPPER(LEFT(first_name, 1)), UPPER(LEFT(last_name, 1))) AS profile, full_name
                 FROM `tabUser` 
-                WHERE name = %s
+                WHERE name IN (%s, %s)
             """
-            user_result = frappe.db.sql(user_query, assigned_to, as_dict=True)
+            user_result = frappe.db.sql(user_query, (created_by, result[0].get('assigned_to')), as_dict=True)
             if user_result:
-                result[0]['designation'] = user_result[0].get('designation')
-                result[0]['full_name'] = user_result[0].get('full_name')
-                result[0]['profile'] = user_result[0].get('profile')
+                result[0]['owner_designation'] = user_result[0].get('designation')
+                result[0]['owner_full_name'] = user_result[0].get('full_name')
+                result[0]['owner_profile'] = user_result[0].get('profile')
+                result[0]['assigned_to_full_name'] = user_result[1].get('full_name')
+                result[0]['assigned_to_profile'] = user_result[1].get('profile')
 
     return result
 
@@ -190,7 +192,7 @@ def get_ticket_messages(ticket_id):
 def get_all_data_for_create_ticket():
     departments = frappe.db.get_list("Departments", pluck= "department_name")
     teams = frappe.db.get_list("Teams", fields=["team_name", "team_of_department"])
-    locations = frappe.db.get_list("Location", pluck=["location_name"])
+    locations = frappe.db.get_list("Location", pluck="location_name")
     assigned_to = frappe.db.get_list("User", fields=["full_name", "department", "email"])
     departments_with_location = frappe.db.get_list("Department with Location", pluck="department_name")
     departments_with_teams = frappe.db.get_list("Department with Team", pluck="department_name")

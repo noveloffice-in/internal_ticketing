@@ -73,9 +73,9 @@ const TicketDetails = () => {
 
     return (
         <div>
-            <Link to="/dashboard" className="mt-4 inline-block">
+            {/* <Link to="/dashboard" className="mt-4 inline-block">
                 <FaArrowLeft className="mr-2" />
-            </Link>
+            </Link> */}
 
 
             <div className="flex">

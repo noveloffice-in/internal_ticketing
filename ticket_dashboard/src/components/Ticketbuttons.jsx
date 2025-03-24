@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useFrappeFileUpload, useFrappePostCall } from 'frappe-react-sdk';
+import { useFrappeFileUpload, useFrappePostCall, useFrappeAuth } from 'frappe-react-sdk';
 
 const TicketButtons = ({ fileUrl, setFileUrl }) => {
     const { ticketId } = useParams();
     const [isUploading, setIsUploading] = useState(false);
     const { upload } = useFrappeFileUpload();
-    const { call: closeTicket } = useFrappePostCall("internal_ticketing.ticketing_api.close_ticket");
+    const { call: update_ticket_status } = useFrappePostCall("internal_ticketing.ticketing_api.update_ticket_status");
+    const { currentUser } = useFrappeAuth();
 
     const handleFileUpload = async (file) => {
         if (!file) return;
@@ -35,13 +36,19 @@ const TicketButtons = ({ fileUrl, setFileUrl }) => {
         }
     };
 
-
+    const closeTicket = async (ticketId, status) => {
+        await update_ticket_status({ticket_id: ticketId, status: status, current_user: currentUser}).then((res) => {
+            console.log(res);
+        }).catch((err) => {
+            console.log(err);
+        });
+    }
 
     return (
         <div>
             <div className="flex gap-2 mt-1">
                 <button
-                    className="text-white text-md bg-purple-500 rounded-md px-8 py-2 flex items-center"
+                    className="text-white text-md bg-[rgb(24,161,161)] rounded-md px-8 py-2 flex items-center"
                     onClick={() => {
                         const fileInput = document.createElement('input');
                         fileInput.type = 'file';
@@ -60,13 +67,11 @@ const TicketButtons = ({ fileUrl, setFileUrl }) => {
                 </button>
 
                 <button
-                    className="text-black text-md border border-purple-500 rounded-md px-5 py-2"
+                    className="text-black text-md border border-[rgb(24,161,161)] rounded-md px-5 py-2"
                     onClick={() => {
-                        const closeTicket = {
-                            ticket_id: ticketId,
-                            status: 'Closed'
-                        }
-                        console.log(closeTicket);
+                        const status = 'Solved Tickets'
+                        console.log(ticketId, status);
+                        closeTicket(ticketId, status);
                     }}
                 >
                     Close Ticket

@@ -68,7 +68,17 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
             });
     }
 
-    const handleAssigneeChange = (assignee) => {
+    const handleAssigneeChange = (assignee, previousUser) => {
+        console.log(previousUser);
+        console.log(assignee);
+        if (previousUser === "Unassigned") {
+            update_ticket_status({ ticket_id: ticketId, status: "Open Tickets", current_user: currentUser })
+            .then((response) => {
+            })
+            .catch((error) => {
+                console.error("Error updating status:", error);
+            });
+        }
         setTicketAssignee(assignee.full_name);
         update_ticket_assignee({ ticket_id: ticketId, assignee: assignee.email })
             .then((response) => {
@@ -117,17 +127,17 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                 <div key={index} className=" w-full">
 
                     <div className="flex items-center mb-4 flex-wrap w-full">
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center text-base mr-2  text-white bg-[rgb(138,89,226,0.28)]">
-                            {subdetails.profile}
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center text-base mr-2  text-white bg-[rgb(142,189,189)]">
+                            {subdetails.owner_profile}
                         </div>
                         <div>
-                            <p className="text-md text-gray-500 font-bold">{subdetails.full_name}</p>
-                            <p className="text-sm text-gray-500">{subdetails.designation}</p>
+                            <p className="text-md text-gray-500 font-bold">{subdetails.owner_full_name}</p>
+                            <p className="text-sm text-gray-500">{subdetails.owner_designation}</p>
                         </div>
                     </div>
 
                     <div className="text-gray-500 flex items-center w-full">
-                        <strong className="mr-2 text-sm">Assigned To: </strong> {ticketAssignee || subdetails.full_name}
+                        <strong className="mr-2 text-sm">Assigned To: </strong> {ticketAssignee || subdetails.assigned_to_full_name}
                         <span className="ml-2 cursor-pointer text-blue-500">
                             <CiEdit onClick={() => setShowAssignee(!showAssignee)} className="text-black" />
                             {showAssignee && (
@@ -135,7 +145,7 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                                 <ul className="absolute top-full right-0 bg-white border border-gray-300 rounded-md shadow-lg w-40">
                                     {assigneeList.map((assignee, index) => (
                                         <li key={index} className="px-4 py-2 hover:bg-gray-100 cursor-pointer" onClick={() => {
-                                            handleAssigneeChange(assignee);
+                                            handleAssigneeChange(assignee, ticketAssignee || subdetails.assigned_to_full_name);
                                             setShowAssignee(false);
                                         }}>
                                             {assignee.full_name}

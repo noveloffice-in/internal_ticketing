@@ -10,7 +10,8 @@ import { useFrappeAuth, useFrappePostCall } from "frappe-react-sdk";
 import { BiTimeFive } from "react-icons/bi";
 import { BsCalendar } from "react-icons/bs";
 import Cookies from "js-cookie";
-import { useFrappeEventListener } from "frappe-react-sdk";
+import { io } from "socket.io-client";
+
 
 
 const Home = () => {
@@ -30,23 +31,27 @@ const Home = () => {
   Cookies.set(getUserCookie);
   const { call: getUserDepartment } = useFrappePostCall("internal_ticketing.ticketing_api.get_user_department");
 
-  useFrappeEventListener("ticket_creation", (ticket_id) => {
-    console.log("Ticket Created successfully", ticket_id);
-  });
+  const hostUrl = window.location.href.split('/')[2]?.split(':')[0];
+  const socket = io(`ws://${hostUrl}:9000`);
 
+
+  // Socket Connection
   useEffect(() => {
-    // You can add more console logs here
-    console.log("Component mounted or dependencies changed");
-    
-    // You can also log variables
-    console.log("Current ticket count:", ticketCount);
-    console.log("Current user department:", userDepartment);
-    
-    // For debugging, you can return a cleanup function
+    const hostUrl = window.location.href.split('/')[2]?.split(':')[0];
+    const socket = io(`http://${hostUrl}:9000`, {
+      transports: ["websocket"],
+    });
+
+    socket.on("connect", () => {
+      if (socket.connected) {
+        console.log("Socket connected successfully", socket.connected);
+      }
+    });
+
     return () => {
-      console.log("Component unmounted or dependencies about to change");
+      socket.disconnect();
     };
-  }, [ticketCount, userDepartment]); // Adding dependencies will make this run when they change
+  }, []);
 
   useEffect(() => {
     getUserDepartment({
@@ -59,8 +64,8 @@ const Home = () => {
     }).catch((err) => {
       console.log("Error", err);
     })
-
   }, [userDepartment]);
+
 
   const openModal = () => {
     setIsModalOpen(true);
