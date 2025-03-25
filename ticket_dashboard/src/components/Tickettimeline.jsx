@@ -40,7 +40,7 @@ const TicketTimeline = ({ ticketTimeline }) => {
                             return (
                                 <div key={index} className="flex space-x-3 relative">
                                     {/* Timeline Marker (Bullet & Line) */}
-                                    <div className="flex flex-col items-center relative mt-2">
+                                    <div className="flex flex-col items-center relative mt-3">
                                         {/* Bullet Point */}
                                         <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
 
@@ -53,10 +53,10 @@ const TicketTimeline = ({ ticketTimeline }) => {
                                     {/* Timeline Content */}
                                     <div>
                                         {entry && (
-                                            <p className="text-gray-500 text-sm p-1">
+                                            <p className="text-gray-500 text-sm mt-2">
                                                 {entry.pre_status == null && entry.post_status == null ? 
-                                                <span>{entry.user} has created the ticket.</span> : 
-                                                <span>{entry.user} has changed the status from {entry.pre_status} to {entry.post_status}.</span> 
+                                                <span>{entry.user} has created the ticket on {new Date(entry.date_of_change).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}{', '}{new Date(entry.date_of_change).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}.</span> : 
+                                                <span>{entry.user} has changed {entry.pre_status} to {entry.post_status} on {new Date(entry.date_of_change).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}{', '}{new Date(entry.date_of_change).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}.</span> 
                                                 }
                                             </p>
                                         )}

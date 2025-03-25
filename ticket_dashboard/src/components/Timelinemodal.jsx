@@ -44,10 +44,14 @@ const Modal = ({ onClose, ticketTimeline }) => {
                                     <div>
                                         {entry && (
                                             <p className="text-gray-500 text-sm p-1">
-                                                {entry.pre_status == null && entry.post_status == null ?
-                                                    <span>{entry.user} has created the ticket.</span> :
-                                                    <span>{entry.user} has changed the status from {entry.pre_status} to {entry.post_status}.</span>
-                                                }
+                                                {entry && (
+                                                    <p className="text-gray-500 text-sm ">
+                                                        {entry.pre_status == null && entry.post_status == null ?
+                                                            <span>{entry.user} has created the ticket on {new Date(entry.date_of_change).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}{', '}{new Date(entry.date_of_change).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}.</span> :
+                                                            <span>{entry.user} has changed {entry.pre_status} to {entry.post_status} on {new Date(entry.date_of_change).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}{', '}{new Date(entry.date_of_change).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}.</span>
+                                                        }
+                                                    </p>
+                                                )}
                                             </p>
                                         )}
 
