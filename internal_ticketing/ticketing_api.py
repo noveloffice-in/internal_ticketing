@@ -8,7 +8,7 @@ def get_user_department(user_id: str):
 @frappe.whitelist()
 def get_user_icon(user_id: str):
     user_query = """
-        SELECT  CONCAT(UPPER(LEFT(first_name, 1)), IF(last_name = '', '', UPPER(LEFT(last_name, 1)))) AS profile
+        SELECT  UPPER(LEFT(first_name, 1)) AS profile
         FROM `tabUser` 
         WHERE name = %s
         """
@@ -165,7 +165,7 @@ def get_ticket_sub_details(ticket_id):
         created_by = result[0].get('owner')
         if created_by:
             user_query = """
-                SELECT designation, CONCAT(UPPER(LEFT(first_name, 1)), IF(last_name = '', '', UPPER(LEFT(last_name, 1)))) AS profile, full_name
+                SELECT designation, UPPER(LEFT(first_name, 1)) AS profile, full_name
                 FROM `tabUser` 
                 WHERE name IN (%s, %s)
             """
@@ -212,7 +212,7 @@ def get_ticket_timeline(ticket_id):
 @frappe.whitelist()
 def get_ticket_messages(ticket_id):
     query = """
-        SELECT d.message, u.full_name as sender, d.date, CONCAT(UPPER(LEFT(first_name, 1)), IF(last_name = '', '', UPPER(LEFT(last_name, 1)))) AS profile, d.status_change, 
+        SELECT d.message, u.full_name as sender, d.date, UPPER(LEFT(first_name, 1)) AS profile, d.status_change, 
         d.sender as user, d.is_attachment, d.attachment_url
         FROM `tabInternal Ticket Description Table` d
         JOIN `tabUser` u ON d.sender = u.name
