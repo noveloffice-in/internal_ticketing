@@ -4,11 +4,11 @@ import { useEffect } from 'react';
 
 
 const Modal = ({ onClose, ticketTimeline }) => {
-    
+
     useEffect(() => {
         // Disable scrolling when modal opens
         document.body.style.overflow = "hidden";
-        
+
         return () => {
             // Enable scrolling when modal closes
             document.body.style.overflow = "auto";
@@ -22,16 +22,16 @@ const Modal = ({ onClose, ticketTimeline }) => {
                 <div className="m-3">
                     {ticketTimeline.length > 0 ? (
                         ticketTimeline.map((entry, index) => {
-                            
+
                             return (
                                 <div key={index} className="flex space-x-3 relative">
                                     {/* Timeline Marker (Bullet & Line) */}
-                                    
+
 
                                     <div className="flex flex-col items-center relative mt-2">
                                         {/* Bullet Point */}
                                         <div className="w-2 h-2 bg-gray-400 rounded-full relative">
-                                        <div className="w-1 h-1 bg-gray-500 rounded-full absolute top-1\2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 mt-1"></div>
+                                            <div className="w-1 h-1 bg-gray-500 rounded-full absolute top-1\2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 mt-1"></div>
                                         </div>
 
                                         {/* Connecting Line */}
@@ -44,7 +44,10 @@ const Modal = ({ onClose, ticketTimeline }) => {
                                     <div>
                                         {entry && (
                                             <p className="text-gray-500 text-sm p-1">
-                                                <span><b>{entry.user}</b> has changed the status from <b>{entry.pre_status}</b> to <b>{entry.post_status}</b>.</span> on <span className="text-xs text-gray-500"> <b>{entry.date_of_change}</b></span>
+                                                {entry.pre_status == null && entry.post_status == null ?
+                                                    <span>{entry.user} has created the ticket.</span> :
+                                                    <span>{entry.user} has changed the status from {entry.pre_status} to {entry.post_status}.</span>
+                                                }
                                             </p>
                                         )}
 

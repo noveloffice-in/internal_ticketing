@@ -54,7 +54,7 @@ const TicketTimeline = ({ ticketTimeline }) => {
                                     <div>
                                         {entry && (
                                             <p className="text-gray-500 text-sm p-1">
-                                                {entry.pre_status && entry.post_status ? 
+                                                {entry.pre_status == null && entry.post_status == null ? 
                                                 <span>{entry.user} has created the ticket.</span> : 
                                                 <span>{entry.user} has changed the status from {entry.pre_status} to {entry.post_status}.</span> 
                                                 }
