@@ -96,11 +96,12 @@ const TicketDetails = () => {
                 </div>
 
                 <div className="w-1/4 p-1 flex flex-col gap-3 mt-3">
+                    {console.log("ticketSubDetails", ticketSubDetails[0].ticket_status)}
                     <TicketSubDetails ticketSubDetails={ticketSubDetails} />
                     <Subtickets compHeader={"Parent Ticket"} suborParentTicketInfo={parentTicket}/>
                     <Subtickets compHeader={"Subtickets"} suborParentTicketInfo={subTicketInfo} parentTicketId={ticketId}/>
                     <TicketTimeline ticketTimeline={ticketTimeline} />
-                    <TicketButtons fileUrl={fileUrl} setFileUrl={setFileUrl}/>
+                    <TicketButtons previousStatus={ticketSubDetails[0].ticket_status}/>
                 </div>
 
             </div>

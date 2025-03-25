@@ -4,7 +4,7 @@ import { useFrappePostCall, useFrappeAuth } from 'frappe-react-sdk';
 import Cookies from 'js-cookie';
 import { ToastContainer, toast } from 'react-toastify';
 
-const TicketButtons = () => {
+const TicketButtons = (previousStatus) => {
     const { ticketId } = useParams();
     const { call: update_ticket_status } = useFrappePostCall("internal_ticketing.ticketing_api.update_ticket_status");
     const { currentUser } = useFrappeAuth();
@@ -13,8 +13,9 @@ const TicketButtons = () => {
     
 
     const closeTicket = async (ticketId, status) => {
-        await update_ticket_status({ticket_id: ticketId, status: status, current_user: currentUser, full_name: full_name}).then((res) => {
-            console.log(res);
+        console.log("previousStatus", previousStatus['previousStatus']);
+        await update_ticket_status({ticket_id: ticketId, status: status, current_user: currentUser, previous_status: previousStatus['previousStatus'], full_name: full_name}).then((res) => {
+            console.log("res", res);
         }).catch((err) => {
             console.log(err);
         });
@@ -34,11 +35,11 @@ const TicketButtons = () => {
                 <button
                     className="text-black text-md border border-[rgb(24,161,161)] rounded-md px-5 py-2"
                     onClick={() => {
-                        console.log(full_name);
                         const status = 'Solved Tickets'
                         closeTicket(ticketId, status);
                         toast.success("Ticket closed successfully", {
                             position: "bottom-right",
+                            autoClose: 1000,
                         });
                     }}
                 >
