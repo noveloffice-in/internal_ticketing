@@ -139,9 +139,19 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                     <div className="text-gray-500 flex items-center w-full">
                         <strong className="mr-2 text-sm">Assigned To: </strong> {ticketAssignee || subdetails.assigned_to_full_name}
                         <span className="ml-2 cursor-pointer text-blue-500">
-                            <CiEdit onClick={() => {
-                                setShowAssignee(!showAssignee)
+                            <CiEdit onClick={(e) => {
+                                e.stopPropagation();
+                                setShowAssignee(!showAssignee);
                                 
+                                // Add event listener to close when clicking outside
+                                if (!showAssignee) {
+                                    setTimeout(() => {
+                                        document.addEventListener('click', function closeAssignee(e) {
+                                            setShowAssignee(false);
+                                            document.removeEventListener('click', closeAssignee);
+                                        });
+                                    }, 0);
+                                }
                             }} className="text-black" />
                             {showAssignee && (
                             <div className="flex relative z-10">
@@ -171,7 +181,20 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                     <div className="text-gray-500 flex items-center w-full mt-3">
                         <strong className="mr-2 text-sm">Department: </strong> { ticketDepartment || subdetails.assigned_department}
                         <span className="ml-2 cursor-pointer text-blue-500">
-                            <CiEdit onClick={() => setShowDepartment(!showDepartment)} className="text-black" />
+                            <CiEdit onClick={(e) => {
+                                e.stopPropagation();
+                                setShowDepartment(!showDepartment);
+                                
+                                // Add event listener to close when clicking outside
+                                if (!showDepartment) {
+                                    setTimeout(() => {
+                                        document.addEventListener('click', function closeDepartment(e) {
+                                            setShowDepartment(false);
+                                            document.removeEventListener('click', closeDepartment);
+                                        });
+                                    }, 0);
+                                }
+                            }} className="text-black" />
                             {showDepartment && (
                                 <div className="flex relative z-10">
                                     <ul className="absolute top-full right-0 bg-white border border-gray-300 rounded-md shadow-lg w-40">
@@ -214,7 +237,17 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                             <span>No Due Date</span>
                         )}
                         <CiEdit onClick={() => {
-                            setShowCalendar(!showCalendar)
+                            setShowCalendar(!showCalendar);
+                            if (!showCalendar) {
+                                setTimeout(() => {
+                                    document.addEventListener('click', function closeCalendar(e) {
+                                        if (!e.target.closest('.react-datepicker') && e.target !== document.querySelector('.ml-2.cursor-pointer.text-black')) {
+                                            setShowCalendar(false);
+                                            document.removeEventListener('click', closeCalendar);
+                                        }
+                                    });
+                                }, 0);
+                            }
                         }} className="ml-2 cursor-pointer text-black" />
                         
                         {showCalendar && (
@@ -250,7 +283,19 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                     <div className={`text-600 text-gray-500 flex items-center w-full mt-3 `}>
                         <strong className="mr-2 text-sm">Status: </strong> {ticketStatus || subdetails.ticket_status}
                         <span className="ml-2 cursor-pointer text-blue-500">
-                            <CiEdit onClick={() => setShowStatus(!showStatus)} className="text-black" />
+                            <CiEdit onClick={() => {
+                                setShowStatus(!showStatus);
+                                if (!showStatus) {
+                                    setTimeout(() => {
+                                        document.addEventListener('click', function closeStatusDropdown(e) {
+                                            if (!e.target.closest('.status-dropdown') && e.target !== document.querySelector('.ml-2.cursor-pointer.text-black')) {
+                                                setShowStatus(false);
+                                                document.removeEventListener('click', closeStatusDropdown);
+                                            }
+                                        });
+                                    }, 0);
+                                }
+                            }} className="text-black" />
 
                             {showStatus && (
                                 <div className="flex relative z-10">
@@ -282,7 +327,19 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                     <div className="text-gray-500 flex items-center flex-wrap w-full mt-3">
                         <strong className="mr-2 text-sm">Priority: </strong> {ticketPriority || subdetails.priority}
                         <span className="ml-2 cursor-pointer text-blue-500">
-                            <CiEdit onClick={() => setShowPriority(!showPriority)} className="text-black" />
+                            <CiEdit onClick={() => {
+                                setShowPriority(!showPriority);
+                                if (!showPriority) {
+                                    setTimeout(() => {
+                                        document.addEventListener('click', function closePriorityDropdown(e) {
+                                            if (!e.target.closest('.priority-dropdown') && e.target !== document.querySelector('.ml-2.cursor-pointer.text-blue-500')) {
+                                                setShowPriority(false);
+                                                document.removeEventListener('click', closePriorityDropdown);
+                                            }
+                                        });
+                                    }, 0);
+                                }
+                            }} className="text-black" />
                             {showPriority && (
                                 <div className="flex relative">
                                     <ul className="absolute top-full right-0 bg-white border border-gray-300 rounded-md shadow-lg w-40">
