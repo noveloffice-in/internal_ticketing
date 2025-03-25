@@ -8,7 +8,7 @@ def get_user_department(user_id: str):
 @frappe.whitelist()
 def get_user_icon(user_id: str):
     user_query = """
-        SELECT  CONCAT(UPPER(LEFT(first_name, 1)), UPPER(LEFT(last_name, 1))) AS profile
+        SELECT  CONCAT(UPPER(LEFT(first_name, 1)), IF(last_name = '', '', UPPER(LEFT(last_name, 1)))) AS profile
         FROM `tabUser` 
         WHERE name = %s
         """
@@ -144,6 +144,10 @@ def create_ticket(form_data):
     ticket.location = location
     ticket.team = team
     ticket.assigned_to = assigned_to
+    ticket.append("ticket_timeline", {
+        "user": frappe.session.user,
+        "date_of_change": frappe.utils.now()
+    })
     ticket.save()
     frappe.publish_realtime('ticket_creation', {'ticket_id': ticket.name})
     return {"success": "Ticket created successfully"}
@@ -161,7 +165,7 @@ def get_ticket_sub_details(ticket_id):
         created_by = result[0].get('owner')
         if created_by:
             user_query = """
-                SELECT designation, CONCAT(UPPER(LEFT(first_name, 1)), UPPER(LEFT(last_name, 1))) AS profile, full_name
+                SELECT designation, CONCAT(UPPER(LEFT(first_name, 1)), IF(last_name = '', '', UPPER(LEFT(last_name, 1)))) AS profile, full_name
                 FROM `tabUser` 
                 WHERE name IN (%s, %s)
             """
@@ -197,9 +201,10 @@ def get_sub_ticket_info(ticket_id):
 @frappe.whitelist()
 def get_ticket_timeline(ticket_id):
     query = """
-        SELECT *
-        FROM `tabTicket Timline Tracker`
-        WHERE parent = %s
+        SELECT t.*, u.full_name as user
+        FROM `tabTicket Timline Tracker` t
+        JOIN `tabUser` u ON t.user = u.name
+        WHERE t.parent = %s
     """
     result = frappe.db.sql(query, ticket_id, as_dict=True)
     return result   
@@ -207,7 +212,7 @@ def get_ticket_timeline(ticket_id):
 @frappe.whitelist()
 def get_ticket_messages(ticket_id):
     query = """
-        SELECT d.message, u.full_name as sender, d.date, CONCAT(UPPER(LEFT(u.first_name, 1)), UPPER(LEFT(u.last_name, 1))) AS profile, d.status_change, 
+        SELECT d.message, u.full_name as sender, d.date, CONCAT(UPPER(LEFT(first_name, 1)), IF(last_name = '', '', UPPER(LEFT(last_name, 1)))) AS profile, d.status_change, 
         d.sender as user, d.is_attachment, d.attachment_url
         FROM `tabInternal Ticket Description Table` d
         JOIN `tabUser` u ON d.sender = u.name
