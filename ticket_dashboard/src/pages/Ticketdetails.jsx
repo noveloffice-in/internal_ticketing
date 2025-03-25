@@ -91,7 +91,7 @@ const TicketDetails = () => {
             <div className="flex">
 
                 <div className="w-5/6 p-2 mt-2">
-                    <TicketMessages ticketMessages={ticketMessages} fileUrl={fileUrl}/>
+                    <TicketMessages ticketMessages={ticketMessages}/>
                     <TextEditor editorText={editorText} setEditorText={setEditorText} setMessageAdded={setMessageAdded} messageAdded={messageAdded}/>
                 </div>
 

@@ -18,16 +18,18 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
     const { call: get_subticket_list_details } = useFrappePostCall("internal_ticketing.ticketing_api.get_subticket_list_details");
 
     useEffect(() => {
-        get_subticket_list_details({department: ticketSubDetails[0].assigned_department})
-            .then((response) => {
-                setDepartmentList(response.message.departments);
-                setStatusList(response.message.statuses);
-                setAssigneeList(response.message.assignees);
-            })
-            .catch((error) => {
-                console.error("Error fetching department list:", error);
-            });
-    }, []);
+        if (ticketSubDetails[0] ) {
+            get_subticket_list_details({department: ticketSubDetails[0].assigned_department})
+                .then((response) => {
+                    setDepartmentList(response.message.departments);
+                    setStatusList(response.message.statuses);
+                    setAssigneeList(response.message.assignees);
+                })
+                .catch((error) => {
+                    console.error("Error fetching department list:", error);
+                });
+        }
+    }, [ticketSubDetails]);
 
     const [dueDate, setDueDate] = useState(ticketSubDetails.due_date);
     const [showCalendar, setShowCalendar] = useState(false);
@@ -54,7 +56,6 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
         setTicketStatus(status);
         update_ticket_status({ ticket_id: ticketId, status: status, current_user: currentUser, previous_status: previousStatus, full_name: fullName })
             .then((response) => {
-                console.log(response);
             })
             .catch((error) => {
                 console.error("Error updating status:", error);
@@ -72,21 +73,23 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
     }
 
     const handleAssigneeChange = (assignee, previousUser) => {
+        setTicketAssignee(assignee.full_name);
         if (previousUser === "Unassigned") {
-            update_ticket_status({ ticket_id: ticketId, status: "Open Tickets", previous_status: "Unassigned", current_user: currentUser, full_name: fullName })
+            update_ticket_status({ ticket_id: ticketId, status: "Open Tickets", current_user: currentUser, previous_status: "Unassigned Tickets", full_name: fullName })
             .then((response) => {
+                console.log("response", response);
+                update_ticket_assignee({ ticket_id: ticketId, assignee: assignee.email })
+                    .then((response) => {
+                    })
+                    .catch((error) => {
+                        console.error("Error updating assignee:", error);
+                    });
             })
             .catch((error) => {
                 console.error("Error updating status:", error);
             });
         }
-        setTicketAssignee(assignee.full_name);
-        update_ticket_assignee({ ticket_id: ticketId, assignee: assignee.email })
-            .then((response) => {
-            })
-            .catch((error) => {
-                console.error("Error updating assignee:", error);
-            });
+        
     }
 
     const handleCalendarClick = (date) => {
@@ -147,7 +150,11 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                                         <li key={index} className="px-4 py-2 hover:bg-gray-100 cursor-pointer" onClick={() => {
                                             handleAssigneeChange(assignee, ticketAssignee || subdetails.assigned_to_full_name);
                                             setShowAssignee(false);
-                                            
+                                            toast.success("Assigned to updated successfully",
+                                                {
+                                                    position: "bottom-right",
+                                                }
+                                            );
                                         }}>
                                             {assignee.full_name}
                                             
@@ -157,6 +164,7 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                             </div>
                             )}
                         </span>
+                        <ToastContainer />
                     </div>
 
                     <div className="text-gray-500 flex items-center w-full mt-3">
@@ -170,6 +178,11 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                                             <li key={index} className="px-4 py-2 hover:bg-gray-100 cursor-pointer" onClick={() => {
                                                 handleDepartmentChange(department);
                                                 setShowDepartment(false);
+                                                toast.success("Department updated successfully",
+                                                    {
+                                                        position: "bottom-right",
+                                                    }
+                                                );
                                             }}>
                                                 {department}
                                             </li>
@@ -178,6 +191,7 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                                 </div>
                             )}
                         </span>
+                        <ToastContainer />
                     </div>
 
                     <div className="text-gray-500 flex items-center flex-wrap w-full mt-3 relative">
@@ -216,12 +230,18 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                                             })
                                         }
                                         handleDateChange(dueDateData);
+                                        toast.success("Due date updated successfully", {
+                                            position: "bottom-right",
+                                        });
                                     }}
                                     dateFormat="dd-MM-yyyy"
                                     inline
+                                    
                                 />
+
                             </div>
                         )}
+                        <ToastContainer />
                     </div>
 
                     <div className={`text-600 text-gray-500 flex items-center w-full mt-3 `}>
@@ -240,7 +260,9 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                                                     const previousStatus = subdetails.ticket_status;
                                                     handleStatusChange(previousStatus, status);
                                                     setShowStatus(false);
-
+                                                    toast.success("Status updated successfully", {
+                                                        position: "bottom-right",
+                                                    });
                                                 }}
                                             >
                                                 {status}
@@ -250,6 +272,7 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                                 </div>
                             )}
                         </span>
+                        <ToastContainer />
                     </div>
 
                     <div className="text-gray-500 flex items-center flex-wrap w-full mt-3">
@@ -263,6 +286,9 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                                             <li key={index} className="px-4 py-2 hover:bg-gray-100 cursor-pointer" onClick={() => {
                                                 handlePriorityChange(priority);
                                                 setShowPriority(false);
+                                                toast.success("Priority updated successfully", {
+                                                    position: "bottom-right",
+                                                });
                                             }}>
                                                 {priority}
                                             </li>
@@ -271,6 +297,7 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                                 </div>
                             )}
                         </span>
+                        <ToastContainer />
                     </div>
 
                     <div className="text-gray-500 flex items-center text-xs mt-4 w-full">

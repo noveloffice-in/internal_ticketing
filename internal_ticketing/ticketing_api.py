@@ -166,12 +166,18 @@ def get_ticket_sub_details(ticket_id):
                 WHERE name IN (%s, %s)
             """
             user_result = frappe.db.sql(user_query, (created_by, result[0].get('assigned_to')), as_dict=True)
-            if user_result:
+            if len(user_result) == 2:
                 result[0]['owner_designation'] = user_result[0].get('designation')
                 result[0]['owner_full_name'] = user_result[0].get('full_name')
                 result[0]['owner_profile'] = user_result[0].get('profile')
                 result[0]['assigned_to_full_name'] = user_result[1].get('full_name')
                 result[0]['assigned_to_profile'] = user_result[1].get('profile')
+            elif len(user_result) == 1:
+                result[0]['owner_designation'] = user_result[0].get('designation')
+                result[0]['owner_full_name'] = user_result[0].get('full_name')
+                result[0]['owner_profile'] = user_result[0].get('profile')
+                result[0]['assigned_to_full_name'] = user_result[0].get('full_name')
+                result[0]['assigned_to_profile'] = user_result[0].get('profile')
 
     return result
 
@@ -201,7 +207,8 @@ def get_ticket_timeline(ticket_id):
 @frappe.whitelist()
 def get_ticket_messages(ticket_id):
     query = """
-        SELECT d.message, u.full_name as sender, d.date, CONCAT(UPPER(LEFT(u.first_name, 1)), UPPER(LEFT(u.last_name, 1))) AS profile, d.status_change, d.sender as user
+        SELECT d.message, u.full_name as sender, d.date, CONCAT(UPPER(LEFT(u.first_name, 1)), UPPER(LEFT(u.last_name, 1))) AS profile, d.status_change, 
+        d.sender as user, d.is_attachment, d.attachment_url
         FROM `tabInternal Ticket Description Table` d
         JOIN `tabUser` u ON d.sender = u.name
         WHERE d.parent = %s
@@ -274,6 +281,13 @@ def update_ticket_status(ticket_id, status, current_user, previous_status, full_
             "status_change": True
         })
 
+        ticket.append("ticket_timeline", {
+            "user": current_user,
+            "pre_status": previous_status,
+            "post_status": status,
+            "date_of_change": frappe.utils.now()
+        })
+
         ticket.save()
         return {"success": True, "message": "Ticket status updated successfully"}
     except Exception as e:
@@ -331,6 +345,26 @@ def update_ticket_description(ticket_id, message, current_user):
         ticket.save()
         return {"success": True, "message": "Ticket description updated successfully"}
     except Exception as e:
+        return {"error": str(e)} 
+
+@frappe.whitelist()
+def update_ticket_description_for_attachment(ticket_id, current_user, file_url, full_name):
+    if not ticket_id or not current_user:
+        return {"error": "Ticket ID and current user are required"}
+    
+    try:
+        ticket = frappe.get_doc("Internal Tickets", ticket_id)
+        ticket.append("description", {
+            "sender": current_user,
+            "message": f"{full_name} has uploaded ",
+            "date": frappe.utils.now(),
+            "status_change": False,
+            "is_attachment": True,
+            "attachment_url": file_url
+        })
+        ticket.save()
+        return {"success": True, "message": "Ticket description updated successfully"}
+    except Exception as e:
         return {"error": str(e)}
     
 @frappe.whitelist()
@@ -340,6 +374,7 @@ def update_ticket_department(ticket_id, department):
     try:
         ticket = frappe.get_doc("Internal Tickets", ticket_id)
         ticket.assigned_department = department
+        ticket.assigned_to = "unassigned@noveloffice.in"
         ticket.save()
         return {"success": True, "message": "Ticket department updated successfully"}
     except Exception as e:

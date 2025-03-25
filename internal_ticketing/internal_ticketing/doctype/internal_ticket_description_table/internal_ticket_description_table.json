@@ -11,7 +11,8 @@
   "message",
   "date",
   "status_change",
-  "attachment"
+  "is_attachment",
+  "attachment_url"
  ],
  "fields": [
   {
@@ -44,15 +45,21 @@
    "label": "Status Change"
   },
   {
-   "fieldname": "attachment",
-   "fieldtype": "Attach",
-   "label": "Attachment"
+   "default": "0",
+   "fieldname": "is_attachment",
+   "fieldtype": "Check",
+   "label": "Is Attachment"
+  },
+  {
+   "fieldname": "attachment_url",
+   "fieldtype": "Data",
+   "label": "Attachment URL"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-03-24 20:00:48.340446",
+ "modified": "2025-03-25 13:09:51.704419",
  "modified_by": "Administrator",
  "module": "Internal Ticketing",
  "name": "Internal Ticket Description Table",

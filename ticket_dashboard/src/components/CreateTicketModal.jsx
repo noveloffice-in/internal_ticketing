@@ -30,7 +30,6 @@ const CreateTicketModal = ({ onClick, isOpen, isSubticket, parentTicketId }) => 
 
     useEffect(() => {
         getAllDataforCreateTicket({ department_name: selectedDepartment }).then((data) => {
-            console.log("Data:", data);
             setDepartments(data.message.departments);
             setDepartmentWithTeams(data.message.departments_with_teams);
             setLocation(data.message.locations);
@@ -65,7 +64,6 @@ const CreateTicketModal = ({ onClick, isOpen, isSubticket, parentTicketId }) => 
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        console.log(name, value);
         if (name === 'assignedTo') {
             const email = assignedToOptions[value].email;
             setFormData(prevState => ({
@@ -82,11 +80,9 @@ const CreateTicketModal = ({ onClick, isOpen, isSubticket, parentTicketId }) => 
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log(formData);
         createTicket({ form_data: formData }).then((data) => {
             toast.success("Ticket created successfully!");
             setTimeout(() => {
-                console.log("Ticket created:", data);
                 onClick();
             }, 1500);
             

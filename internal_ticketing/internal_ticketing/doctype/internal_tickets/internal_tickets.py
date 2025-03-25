@@ -5,8 +5,7 @@ from frappe.model.document import Document
 
 class InternalTickets(Document):
 	def after_insert(doc):
-		frappe.publish_realtime('ticket_creation', {'ticket_id': doc.name})
-		frappe.msgprint("Ticket Created")
-		doc.db_set("approved", 1)	
+		pass
+
 
 		
