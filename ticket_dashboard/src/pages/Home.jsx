@@ -26,36 +26,17 @@ const Home = () => {
   const [activeCard, setActiveCard] = useState("All Tickets");
   const [userDepartment, setUserDepartment] = useState("");
   const [userPermissionType, setUserPermissionType] = useState("");
+  const [messages, setMessages] = useState([]);
 
   Cookies.set(getUserCookie);
   const { call: getUserDepartment } = useFrappePostCall("internal_ticketing.ticketing_api.get_user_department");
 
-  const hostUrl = window.location.href.split('/')[2]?.split(':')[0];
-  const socket = io(`ws://${hostUrl}:9000`);
 
-  console.log("User ID", Cookies.get('full_name'));
-  // Socket Connection
-  useEffect(() => {
-    const hostUrl = window.location.href.split('/')[2]?.split(':')[0];
-    const socket = io(`http://${hostUrl}:9000`, {
-      transports: ["websocket"],
-    });
-
-    socket.on("connect", () => {
-      if (socket.connected) {
-        console.log("Socket connected successfully", socket.connected);
-      }
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
 
   useEffect(() => {
     getUserDepartment({
       user_id: Cookies.get('user_id')
-      
+
     }).then((res) => {
       setUserDepartment(res['message'][0]['department']);
       setUserPermissionType(res['message'][0]['user_permission_type']);
@@ -69,6 +50,27 @@ const Home = () => {
       console.log("Error", err);
     })
   }, [userDepartment]);
+
+  useEffect(() => {
+    const socket = new WebSocket("ws://10.80.4.63:9000");
+
+    socket.onopen = () => {
+      console.log("Connected to Frappe WebSocket");
+    };
+
+    socket.onmessage = (event) => {
+      console.log("Message from server:", event.data);
+    };
+
+    socket.onerror = (error) => {
+      console.error("WebSocket Error:", error);
+    };
+
+    socket.onclose = () => {
+      console.log("WebSocket disconnected");
+    };
+
+  }, []);
 
 
   const openModal = () => {
@@ -126,7 +128,7 @@ const Home = () => {
         </div>
         <div className="w-1/2 flex justify-end">
           <Button text="Create Ticket" onClick={openModal} />
-          
+
           {isModalOpen && <CreateTicketModal onClick={closeModal} isOpen={isModalOpen} isSubticket={false} />}
         </div>
       </div>
