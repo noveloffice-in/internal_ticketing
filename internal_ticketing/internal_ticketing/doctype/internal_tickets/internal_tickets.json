@@ -15,6 +15,7 @@
   "ticket_status",
   "due_date",
   "priority",
+  "visible_for_entire_team",
   "ticket_timeline_section",
   "ticket_timeline",
   "approval_section_section",
@@ -133,11 +134,17 @@
    "fieldtype": "Select",
    "label": "Priority",
    "options": "\nHigh\nMedium\nLow"
+  },
+  {
+   "default": "0",
+   "fieldname": "visible_for_entire_team",
+   "fieldtype": "Check",
+   "label": "Visible for entire Team"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-03-14 18:43:28.741792",
+ "modified": "2025-03-24 19:15:52.105862",
  "modified_by": "Administrator",
  "module": "Internal Ticketing",
  "name": "Internal Tickets",

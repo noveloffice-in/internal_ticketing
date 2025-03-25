@@ -4,9 +4,10 @@ import { useParams } from "react-router-dom";
 import { useFrappeAuth } from "frappe-react-sdk";
 import { useFrappePostCall } from "frappe-react-sdk";
 
-const TextEditor = ({ editorText, setEditorText }) => {
+const TextEditor = ({ editorText, setEditorText, setMessageAdded, messageAdded }) => {
+
     const [isTyping, setIsTyping] = useState(false);
-    const {ticketId} = useParams();
+    const { ticketId } = useParams();
     const { currentUser } = useFrappeAuth();
     const { call: sendMessage } = useFrappePostCall("internal_ticketing.ticketing_api.update_ticket_description");
 
@@ -16,17 +17,17 @@ const TextEditor = ({ editorText, setEditorText }) => {
 
     const handleSendMessage = () => {
         if (editorText.trim() !== "") {
-            console.log("editorText", editorText);
             sendMessage({
                 ticket_id: ticketId,
                 message: editorText,
                 current_user: currentUser
             }).then((response) => {
+                setMessageAdded(messageAdded + 1);
             }).catch((error) => {
                 console.error("Error sending message:", error);
             });
+            setEditorText("");
         }
-        setEditorText("");
     };
 
     return (
@@ -48,8 +49,8 @@ const TextEditor = ({ editorText, setEditorText }) => {
             />
             {isTyping && (
                 <button
-                    className="absolute bottom-2 right-2 bg-purple-500 text-white p-2 rounded-full"
-                    onClick={() => { handleSendMessage()}}
+                    className="absolute bottom-2 right-2 bg-[rgb(24,161,161)] text-white p-2 rounded-full"
+                    onClick={() => { handleSendMessage() }}
                 >
                     <FaPaperPlane />
                 </button>

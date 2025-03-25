@@ -10,7 +10,8 @@
   "sender",
   "message",
   "date",
-  "status_change"
+  "status_change",
+  "attachment"
  ],
  "fields": [
   {
@@ -41,12 +42,17 @@
    "fieldname": "status_change",
    "fieldtype": "Check",
    "label": "Status Change"
+  },
+  {
+   "fieldname": "attachment",
+   "fieldtype": "Attach",
+   "label": "Attachment"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-03-19 15:03:34.099748",
+ "modified": "2025-03-24 20:00:48.340446",
  "modified_by": "Administrator",
  "module": "Internal Ticketing",
  "name": "Internal Ticket Description Table",

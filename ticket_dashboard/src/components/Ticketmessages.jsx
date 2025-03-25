@@ -1,16 +1,17 @@
 import { useParams, Link } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import { useFrappeAuth } from 'frappe-react-sdk';
-
+import Cookies from 'js-cookie';
 const TicketMessages = ({ ticketMessages, fileUrl }) => {
+
   const { currentUser } = useFrappeAuth();
   const [messagesArray, setMessagesArray] = useState([]);
   const messagesEndRef = useRef(null);
-
-  useEffect(() => { 
+  const fullName = Cookies.get('full_name');
+  useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }1  
+    }
   }, [messagesArray]);
 
   return (
@@ -27,52 +28,70 @@ const TicketMessages = ({ ticketMessages, fileUrl }) => {
               <div key={index} className="p-2 rounded" style={{ minHeight: '100px' }}>
                 <div className="flex items-center mb-2">
                   <div className={`flex ${msg.user === currentUser ? 'justify-end' : 'justify-start'} w-full`}>
-                    {msg.user !== currentUser && (
+                    {msg.user !== currentUser && msg.status_change == 0 && (
                       <div className="w-10 h-10 text-center rounded-full flex items-center justify-center text-base text-white bg-gray-300 mr-2">
                         {msg.profile}
                       </div>
                     )}
-
-                    <div className={`flex flex-col ${msg.user === currentUser ? 'items-end' : 'items-start'}`}>
-                      <div className="flex">
-                        {msg.user === currentUser && (
-                          <div className="w-10 h-10 text-center rounded-full flex justify-center items-center text-base text-white bg-[rgb(142,189,189)] ml-2 order-2">
-                            {msg.profile}
+                    {msg.status_change == 0 && (
+                      <div className={`flex flex-col ${msg.user === currentUser ? 'items-end' : 'items-start'}`}>
+                        <div className="flex">
+                          {msg.user === currentUser && msg.status_change == 0 && (
+                            <div className="w-10 h-10 text-center rounded-full flex justify-center items-center text-base text-white bg-[rgb(142,189,189)] ml-2 order-2">
+                              {msg.profile}
+                            </div>
+                          )}
+                          <div className={`flex gap-2 mt-2 ${msg.user === currentUser && msg.status_change == 0 ? 'mr-2 order-1' : 'ml-2'}`}>
+                            <p className="text-md text-gray-500 font-bold">{msg.sender}</p>
                           </div>
-                        )}
-                        <div className={`flex gap-2 mt-2 ${msg.user === currentUser ? 'mr-2 order-1' : 'ml-2'}`}>
-                          <p className="text-md text-gray-500 font-bold">{msg.sender}</p>
                         </div>
-                      </div>
 
-                      <div className={`p-3 rounded ${msg.user === currentUser ? 'bg-[rgb(208,233,233)] rounded-bl-lg rounded-tl-lg rounded-tr-lg' : 'bg-gray-100 rounded-br-lg rounded-tr-lg rounded-tl-lg'} mt-2 max-w-[50rem]`}>
-                        <p className="text-gray-700">{msg.message}</p>
-                        {/* {msg.file_url && (
-                          <div className="mt-2">
-                            <a href={msg.file_url} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
-                              {msg.file_url.split('/').pop()}
-                            </a>
+                        <div className={`p-3 rounded ${msg.user === currentUser && msg.status_change == 0 ? 'bg-[rgb(208,233,233)] rounded-bl-lg rounded-tl-lg rounded-tr-lg' : 'bg-gray-100 rounded-br-lg rounded-tr-lg rounded-tl-lg'} mt-2 max-w-[50rem]`}>
+                          <div className="text-gray-700">
+                            {msg.status_change == 0
+                              ? <p className="text-gray-500 text-xs flex items-center justify-center"> {msg.message}</p>
+                              : null
+                            }
                           </div>
-                        )} */}
-                        <p className="text-xs text-gray-400 text-right">
-                          {new Date(msg.date).toLocaleDateString('en-US', {  month: 'short', day: 'numeric' })}{', '}
-                          {new Date(msg.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
-                        </p>
+                          {msg.status_change == 0 && (
+                            <p className="text-xs text-gray-400 text-right">
+                              {new Date(msg.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}{', '}
+                              {new Date(msg.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
+                            </p>
+                          )}
+
+                        </div>
+
+
                       </div>
-                    </div>
+                    )}
                   </div>
+                </div>
+                <div className="flex items-center justify-center">
+                  {msg.status_change == 1 && (
+                    <p className="text-gray-500 text-sm flex items-center justify-center"> {msg.message}</p>
+                  )}
                 </div>
               </div>
             ))
           )}
           {fileUrl && (
-            <div className="p-4 border-t">
-              <p className="text-sm font-medium text-gray-600">Attached File:</p>
-              <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
-                {fileUrl.split('/').pop()}
-              </a>
+            <div className="p-2  flex flex-col items-end ">
+              <div className="flex items-center mb-2 flex-row-reverse gap-2">
+                <div className="w-10 h-10 text-center rounded-full flex justify-center items-center text-base text-white bg-[rgb(142,189,189)] mr-2">
+                  {fullName ? `${fullName.charAt(0)}${fullName.includes(' ') ? fullName.charAt(fullName.indexOf(' ') + 1) : ''}` : "U"}
+                </div>
+                <div className="text-md text-gray-500 font-bold">{fullName}</div>
+              </div>
+              <div className="flex items-center mb-2 ml-12 p-2">
+                <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
+                  {fileUrl.split('/').pop()}
+                </a>
+              </div>
             </div>
           )}
+
+
           <div ref={messagesEndRef} />
         </div>
       </div>

@@ -8,7 +8,7 @@ import TextEditor from "../components/Texteditor";
 import { useState, useEffect } from "react";
 import { useFrappePostCall } from "frappe-react-sdk";   
 import TicketButtons from "../components/Ticketbuttons";
-
+import Button from "../components/Button";
 
 
 
@@ -24,6 +24,9 @@ const TicketDetails = () => {
     const [editorText, setEditorText] = useState("");
     const [parentTicket, setParentTicket] = useState([]);
     const [fileUrl, setFileUrl] = useState("");
+    const [messageAdded, setMessageAdded] = useState(0);
+
+ 
     const { call: getTicketSubDetails } = useFrappePostCall("internal_ticketing.ticketing_api.get_ticket_sub_details");
     const { call: getSubTicketInfo } = useFrappePostCall("internal_ticketing.ticketing_api.get_sub_ticket_info");
     const { call: getTicketTimeline } = useFrappePostCall("internal_ticketing.ticketing_api.get_ticket_timeline");
@@ -62,7 +65,14 @@ const TicketDetails = () => {
         };
 
         fetchData();
-    }, [ticketId]);
+    }, [ticketId, messageAdded]);
+
+    // useEffect(() => {
+    //     console.log(messageAdded);
+    //     const ticketMessagesData = getTicketMessages({ ticket_id: ticketId });
+    //     setTicketMessages(ticketMessagesData.message);
+    // }, [messageAdded]);
+
 
     if (isLoading) {
         return <div>Loading...</div>;
@@ -82,7 +92,7 @@ const TicketDetails = () => {
 
                 <div className="w-5/6 p-2 mt-2">
                     <TicketMessages ticketMessages={ticketMessages} fileUrl={fileUrl}/>
-                    <TextEditor editorText={editorText} setEditorText={setEditorText}/>
+                    <TextEditor editorText={editorText} setEditorText={setEditorText} setMessageAdded={setMessageAdded} messageAdded={messageAdded}/>
                 </div>
 
                 <div className="w-1/4 p-1 flex flex-col gap-3 mt-3">

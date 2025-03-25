@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useFrappeFileUpload, useFrappePostCall, useFrappeAuth } from 'frappe-react-sdk';
+import Cookies from 'js-cookie';
 
 const TicketButtons = ({ fileUrl, setFileUrl }) => {
     const { ticketId } = useParams();
@@ -8,6 +9,7 @@ const TicketButtons = ({ fileUrl, setFileUrl }) => {
     const { upload } = useFrappeFileUpload();
     const { call: update_ticket_status } = useFrappePostCall("internal_ticketing.ticketing_api.update_ticket_status");
     const { currentUser } = useFrappeAuth();
+    const full_name = Cookies.get('full_name');
 
     const handleFileUpload = async (file) => {
         if (!file) return;
@@ -37,7 +39,7 @@ const TicketButtons = ({ fileUrl, setFileUrl }) => {
     };
 
     const closeTicket = async (ticketId, status) => {
-        await update_ticket_status({ticket_id: ticketId, status: status, current_user: currentUser}).then((res) => {
+        await update_ticket_status({ticket_id: ticketId, status: status, current_user: currentUser, full_name: full_name}).then((res) => {
             console.log(res);
         }).catch((err) => {
             console.log(err);
@@ -69,8 +71,8 @@ const TicketButtons = ({ fileUrl, setFileUrl }) => {
                 <button
                     className="text-black text-md border border-[rgb(24,161,161)] rounded-md px-5 py-2"
                     onClick={() => {
+                        console.log(full_name);
                         const status = 'Solved Tickets'
-                        console.log(ticketId, status);
                         closeTicket(ticketId, status);
                     }}
                 >

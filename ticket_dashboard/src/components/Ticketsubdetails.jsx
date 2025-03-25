@@ -4,10 +4,13 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { CiEdit } from "react-icons/ci";
 import { useFrappePostCall, useFrappeAuth } from "frappe-react-sdk";
+import { ToastContainer, toast } from "react-toastify";
+import Cookies from 'js-cookie';
 
 const TicketSubDetails = ({ ticketSubDetails }) => {
     const { ticketId } = useParams();
     const { currentUser } = useFrappeAuth();
+    const fullName = Cookies.get('full_name');
     const [departmentList, setDepartmentList] = useState([]);
     const [statusList, setStatusList] = useState([]);
     const [assigneeList, setAssigneeList] = useState([]);
@@ -47,11 +50,11 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
     const { call: update_ticket_department } = useFrappePostCall("internal_ticketing.ticketing_api.update_ticket_department");
     const { call: update_ticket_assignee } = useFrappePostCall("internal_ticketing.ticketing_api.update_ticket_assignee");
     
-    const handleStatusChange = (status, currentUser) => {
+    const handleStatusChange = (previousStatus, status) => {
         setTicketStatus(status);
-
-        update_ticket_status({ ticket_id: ticketId, status: status, current_user: currentUser })
+        update_ticket_status({ ticket_id: ticketId, status: status, current_user: currentUser, previous_status: previousStatus, full_name: fullName })
             .then((response) => {
+                console.log(response);
             })
             .catch((error) => {
                 console.error("Error updating status:", error);
@@ -69,10 +72,8 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
     }
 
     const handleAssigneeChange = (assignee, previousUser) => {
-        console.log(previousUser);
-        console.log(assignee);
         if (previousUser === "Unassigned") {
-            update_ticket_status({ ticket_id: ticketId, status: "Open Tickets", current_user: currentUser })
+            update_ticket_status({ ticket_id: ticketId, status: "Open Tickets", previous_status: "Unassigned", current_user: currentUser, full_name: fullName })
             .then((response) => {
             })
             .catch((error) => {
@@ -107,10 +108,6 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
     const handleDateChange = (date) => {
         const [day, month, year] = date.due_date.split('/');
         const formatted_date = `${year}-${month}-${day}`;
-        const dateData = {
-            ticket_id: ticketId,
-            due_date: formatted_date
-        }
         update_ticket_due_date({ ticket_id: date.ticket_id, due_date: formatted_date })
             .then((response) => {
             })
@@ -139,7 +136,10 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                     <div className="text-gray-500 flex items-center w-full">
                         <strong className="mr-2 text-sm">Assigned To: </strong> {ticketAssignee || subdetails.assigned_to_full_name}
                         <span className="ml-2 cursor-pointer text-blue-500">
-                            <CiEdit onClick={() => setShowAssignee(!showAssignee)} className="text-black" />
+                            <CiEdit onClick={() => {
+                                setShowAssignee(!showAssignee)
+                                
+                            }} className="text-black" />
                             {showAssignee && (
                             <div className="flex relative z-10">
                                 <ul className="absolute top-full right-0 bg-white border border-gray-300 rounded-md shadow-lg w-40">
@@ -147,8 +147,10 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                                         <li key={index} className="px-4 py-2 hover:bg-gray-100 cursor-pointer" onClick={() => {
                                             handleAssigneeChange(assignee, ticketAssignee || subdetails.assigned_to_full_name);
                                             setShowAssignee(false);
+                                            
                                         }}>
                                             {assignee.full_name}
+                                            
                                         </li>
                                     ))}
                                 </ul>
@@ -235,7 +237,8 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                                                 key={index}
                                                 className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
                                                 onClick={() => {
-                                                    handleStatusChange(status, currentUser);
+                                                    const previousStatus = subdetails.ticket_status;
+                                                    handleStatusChange(previousStatus, status);
                                                     setShowStatus(false);
 
                                                 }}

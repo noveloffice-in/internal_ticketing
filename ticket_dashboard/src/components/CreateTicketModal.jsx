@@ -1,7 +1,8 @@
-import React from 'react';
+import React from 'react';  
 import { IoClose } from "react-icons/io5";
 import { useState, useEffect } from 'react';
 import { useFrappePostCall } from 'frappe-react-sdk';
+import { toast, ToastContainer } from 'react-toastify';
 
 const CreateTicketModal = ({ onClick, isOpen, isSubticket, parentTicketId }) => {
     const [departments, setDepartments] = useState([]);
@@ -83,32 +84,40 @@ const CreateTicketModal = ({ onClick, isOpen, isSubticket, parentTicketId }) => 
         e.preventDefault();
         console.log(formData);
         createTicket({ form_data: formData }).then((data) => {
-            console.log("Ticket created:", data);
-            onClick();
+            toast.success("Ticket created successfully!");
+            setTimeout(() => {
+                console.log("Ticket created:", data);
+                onClick();
+            }, 1500);
+            
         }).catch((error) => {
             console.error("Error creating ticket:", error);
+            toast("Error creating ticket. Please try again.");
         });
     };
 
     return (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-[1300] overflow-y-auto">
-            <div className='bg-white rounded-xl mx-4 sm:mx-8 md:mx-16 lg:mx-40 p-4 sm:p-6 md:p-8 lg:p-10 my-4 sm:my-8 md:my-16 lg:my-20 max-w-4xl md:max-w-5xl lg:max-w-6xl w-auto md:w-auto lg:w-auto relative'>
-                <button className='absolute top-4 right-4 md:top-6 md:right-6 lg:top-8 lg:right-8' onClick={onClick}>
-                    <IoClose size={24} className="sm:text-xl md:text-2xl lg:text-3xl" />
+        <div className="fixed inset-0 justify-center bg-black bg-opacity-50 backdrop-blur-sm z-[1300] overflow-y-auto">
+            <div className='bg-white rounded-xl ml-40 mr-40 p-10 mt-40 mb-40'>
+                <button className='absolute top-40 right-40 m-4' onClick={onClick}>
+                    <IoClose size={30} />
                 </button>
-                <h2 className='text-xl sm:text-2xl text-center font-bold mb-4 sm:mb-6'>Create a new Ticket</h2>
-                <form onSubmit={handleSubmit} className="overflow-y-auto">
-                    <div className="flex flex-col md:flex-row md:flex-wrap">
-                        {isSubticket && (
-                            <div className="w-full md:w-1/2 pr-0 md:pr-2 mb-4">
+                <h2 className='text-2xl text-center font-bold'>Create a new Ticket</h2>
+                <form onSubmit={handleSubmit}>
+                    {isSubticket && (
+                        <div className="mb-4 flex">
+                            <div className="w-1/2 pr-2">
                                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="parentTicket">
                                     Parent Ticket
                                 </label>
                                 <input type="text" id="parentTicket" name="parentTicket" value={parentTicketId} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" onChange={handleChange} onInput={(e) => e.target.setCustomValidity('')} readOnly />
+                                
                             </div>
-                        )}
+                        </div>
+                    )}
 
-                        <div className="w-full md:w-1/2 md:pl-0 md:pl-2 mb-4">
+                    <div className="mb-4 flex">
+                        <div className="w-1/2 pr-2">
                             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="to">
                                 To
                             </label>
@@ -119,65 +128,68 @@ const CreateTicketModal = ({ onClick, isOpen, isSubticket, parentTicketId }) => 
                                 ))}
                             </select>
                         </div>
+                    </div>
 
-                        {departmentsWithLocation.includes(selectedDepartment) && (
-                            <div className="w-full md:w-1/2 pr-0 md:pr-2 mb-4">
-                                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="location">
-                                    Location
+                    {departmentsWithLocation.includes(selectedDepartment) && (
+                        <div className="mb-4 w-1/2 pr-2">
+                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="location">
+                                Location
+                            </label>
+                            <select id="location" name="location" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" defaultValue="" onChange={handleChange}>
+                                <option value="" disabled></option>
+                                {location.map((loc, index) => (
+                                    <option key={index} value={loc}>{loc}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+                    
+                    {departmentWithTeams.includes(selectedDepartment) && (
+                        <div className="mb-4 flex">
+                            <div className="w-1/2 pr-2">
+                                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="team">
+                                    Team
                                 </label>
-                                <select id="location" name="location" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" defaultValue="" onChange={handleChange}>
+                                <select id="team" name="team" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" defaultValue="" onChange={handleChange}>
                                     <option value="" disabled></option>
-                                    {location.map((loc, index) => (
-                                        <option key={index} value={loc}>{loc}</option>
+                                    {teams[selectedDepartment].map((team, index) => (
+                                        <option key={index} value={team}>{team}</option>
                                     ))}
                                 </select>
                             </div>
-                        )}
-                        
-                        {departmentWithTeams.includes(selectedDepartment) && (
-                            <>
-                                <div className="w-full md:w-1/2 pr-0 md:pr-2 mb-4">
-                                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="team">
-                                        Team
-                                    </label>
-                                    <select id="team" name="team" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" defaultValue="" onChange={handleChange}>
-                                        <option value="" disabled></option>
-                                        {teams[selectedDepartment].map((team, index) => (
-                                            <option key={index} value={team}>{team}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="w-full md:w-1/2 pl-0 md:pl-2 mb-4">
-                                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="assignedTo">
-                                        Assigned To
-                                    </label>
-                                    <select id="assignedTo" name="assignedTo" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" defaultValue="" onChange={(e) => {handleChange(e)}}>
-                                        <option value="" disabled></option>
-                                        {Object.keys(assignedToOptions).map((option, index) => (
-                                            assignedToOptions[option].department === selectedDepartment && (
-                                                <option key={index} value={option}>{option}</option>
-                                            )
-                                        ))}
-                                    </select>
-                                </div>
-                            </>
-                        )}
-
-                        <div className="w-full md:w-1/2 pr-0 md:pr-2 mb-4">
-                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="subject">
-                                Subject
-                            </label>
-                            <input type="text" id="subject" name="subject" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" onChange={handleChange} required onInvalid={(e) => e.target.setCustomValidity('Please enter a subject')} onInput={(e) => e.target.setCustomValidity('')} />
+                            <div className="w-1/2 pl-2">
+                                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="assignedTo">
+                                    Assigned To
+                                </label>
+                                <select id="assignedTo" name="assignedTo" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" defaultValue="" onChange={(e) => {handleChange(e)}}>
+                                    
+                                    <option value="" disabled></option>
+                                    {Object.keys(assignedToOptions).map((option, index) => (
+                                        assignedToOptions[option].department === selectedDepartment && (
+                                            <option key={index} value={option}>{option}</option>
+                                        )
+                                    ))}
+                                </select>
+                            </div>
                         </div>
+                    )}
 
-                        <div className="w-full md:w-1/2 pl-0 md:pl-2 mb-4">
-                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="due-date">
-                                Due Date
-                            </label>
-                            <input type="date" id="due-date" name="dueDate" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" defaultValue={formData.dueDate} onChange={handleChange} min={new Date().toISOString().split('T')[0]} />
-                        </div>
+                    <div className="mb-4">
+                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="subject">
+                            Subject
+                        </label>
+                        <input type="text" id="subject" name="subject" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" onChange={handleChange} required onInvalid={(e) => e.target.setCustomValidity('Please enter a subject')} onInput={(e) => e.target.setCustomValidity('')} />
+                    </div>
 
-                        <div className="w-full md:w-1/2 pr-0 md:pr-2 mb-4">
+                    <div className="mb-4">
+                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="message">
+                            Message
+                        </label>
+                        <textarea id="message" name="message" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="4" onChange={handleChange} required onInvalid={(e) => e.target.setCustomValidity('Please enter a message')} onInput={(e) => e.target.setCustomValidity('')}></textarea>
+                    </div>
+
+                    <div className="mb-4 flex flex-wrap">
+                        <div className="w-1/2 pr-2">
                             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="status">
                                 Status
                             </label>
@@ -185,8 +197,7 @@ const CreateTicketModal = ({ onClick, isOpen, isSubticket, parentTicketId }) => 
                                 <option value="unassigned">Unassigned</option>
                             </select>
                         </div>
-                        
-                        <div className="w-full md:w-1/2 pl-0 md:pl-2 mb-4">
+                        <div className="w-1/2 pl-2">
                             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="priority">
                                 Priority
                             </label>
@@ -196,21 +207,24 @@ const CreateTicketModal = ({ onClick, isOpen, isSubticket, parentTicketId }) => 
                                 <option value="High">High</option>
                             </select>
                         </div>
+                    </div>
 
-                        <div className="w-full mb-4">
-                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="message">
-                                Message
+                    <div className="mb-4 flex flex-wrap">
+                        <div className="w-1/2 pr-2">
+                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="due-date">
+                                Due Date
                             </label>
-                            <textarea id="message" name="message" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="4" onChange={handleChange} required onInvalid={(e) => e.target.setCustomValidity('Please enter a message')} onInput={(e) => e.target.setCustomValidity('')}></textarea>
+                            <input type="date" id="due-date" name="dueDate" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" defaultValue={formData.dueDate} onChange={handleChange} min={new Date().toISOString().split('T')[0]} />
                         </div>
                     </div>
-                    
                     <div className="flex justify-end">
-                        <button type="submit" className="bg-blue-500 hover:bg-blue-600 text-white rounded-xl px-4 py-2 transition-colors duration-300">
+                        <button type="submit" className="bg-[rgb(24,161,161)] text-white rounded-xl px-4 py-2" >
                             Create Ticket
                         </button>
                     </div>
+                    <ToastContainer />
                 </form>
+
             </div>
         </div>
     );

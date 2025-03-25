@@ -12,8 +12,6 @@ import { BsCalendar } from "react-icons/bs";
 import Cookies from "js-cookie";
 import { io } from "socket.io-client";
 
-
-
 const Home = () => {
   const { getUserCookie } = useFrappeAuth();
   const [ticketCreated, setTicketCreated] = useState(0);
@@ -22,11 +20,12 @@ const Home = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState("All Tickets");
-  const { call: call1 } = useFrappePostCall("internal_ticketing.ticketing_api.get_ticket_count_by_department");
-  const { call: call2 } = useFrappePostCall("internal_ticketing.ticketing_api.get_ticket_list");
+  const { call: get_ticket_count_by_department } = useFrappePostCall("internal_ticketing.ticketing_api.get_ticket_count_by_department");
+  const { call: get_ticket_list } = useFrappePostCall("internal_ticketing.ticketing_api.get_ticket_list");
   const ticketStatusException = ["Cancelled Tickets"]
   const [activeCard, setActiveCard] = useState("All Tickets");
   const [userDepartment, setUserDepartment] = useState("");
+  const [userPermissionType, setUserPermissionType] = useState("");
 
   Cookies.set(getUserCookie);
   const { call: getUserDepartment } = useFrappePostCall("internal_ticketing.ticketing_api.get_user_department");
@@ -34,7 +33,7 @@ const Home = () => {
   const hostUrl = window.location.href.split('/')[2]?.split(':')[0];
   const socket = io(`ws://${hostUrl}:9000`);
 
-
+  console.log("User ID", Cookies.get('full_name'));
   // Socket Connection
   useEffect(() => {
     const hostUrl = window.location.href.split('/')[2]?.split(':')[0];
@@ -56,11 +55,16 @@ const Home = () => {
   useEffect(() => {
     getUserDepartment({
       user_id: Cookies.get('user_id')
+      
     }).then((res) => {
-      setUserDepartment(res['message']);
+      setUserDepartment(res['message'][0]['department']);
+      setUserPermissionType(res['message'][0]['user_permission_type']);
+      console.log("User Permission Type", userPermissionType);
       console.log("User Department", userDepartment);
-      getTicketCountByDepartment(userDepartment);
-      getTicketList(userDepartment);
+      console.log("User ID", Cookies.get('user_id'));
+
+      getTicketCountByDepartment(userDepartment, userPermissionType, Cookies.get('user_id'));
+      getTicketList(userDepartment, userPermissionType, Cookies.get('user_id'));
     }).catch((err) => {
       console.log("Error", err);
     })
@@ -73,13 +77,15 @@ const Home = () => {
 
   const closeModal = () => {
     setIsModalOpen(false);
-    getTicketCountByDepartment(userDepartment);
-    getTicketList(userDepartment);
+    getTicketCountByDepartment(userDepartment, userPermissionType, Cookies.get('user_id'));
+    getTicketList(userDepartment, userPermissionType, Cookies.get('user_id'));
   };
 
-  const getTicketCountByDepartment = (userDepartment) => {
-    call1({
+  const getTicketCountByDepartment = (userDepartment, userPermissionType, userId) => {
+    get_ticket_count_by_department({
       department: userDepartment,
+      user_permission_type: userPermissionType,
+      user_id: userId
     })
       .then((res) => {
         setTicketCount(Object.values(res['message']));
@@ -89,9 +95,11 @@ const Home = () => {
       })
   }
 
-  const getTicketList = (userDepartment) => {
-    call2({
+  const getTicketList = (userDepartment, userPermissionType, userId) => {
+    get_ticket_list({
       department: userDepartment,
+      user_permission_type: userPermissionType,
+      user_id: userId
     })
       .then((res) => {
         setTicketList(res['message']);
@@ -118,10 +126,10 @@ const Home = () => {
         </div>
         <div className="w-1/2 flex justify-end">
           <Button text="Create Ticket" onClick={openModal} />
+          
           {isModalOpen && <CreateTicketModal onClick={closeModal} isOpen={isModalOpen} isSubticket={false} />}
         </div>
       </div>
-
       {/* Ticket Cards */}
       <div className='flex gap-4 flex flex-row w-full flex-wrap' >
         {ticketCount.map((category, index) => (
@@ -156,7 +164,7 @@ const Home = () => {
                   <Link
                     key={ticket.name}
                     to={`/dashboard/tickets/${ticket.name}`} // Navigates to TicketDetails page
-                    className="border-2 border-gray-200 p-4 mb-2 rounded hover:bg-gray-100 flex justify-between items-start rounded-2xl"
+                    className="border-2 border-gray-200 p-4 mb-2 rounded hover:bg-[rgb(177,216,216)] flex justify-between items-start rounded-2xl"
                   >
                     <div className="flex ">
                       {ticket.status === "Open" && <div className="bg-red-100  flex items-center justify-center rounded-md w-7 h-7 mr-4 mt-1"><FaCircleExclamation color='red' /></div>}
@@ -211,14 +219,8 @@ const Home = () => {
                           year: 'numeric'
                         })} </p>
                       </div>
-
-
-
-
                     </div>
                   </Link>
-
-
                 )
               )))
             )
