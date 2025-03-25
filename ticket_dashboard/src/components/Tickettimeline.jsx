@@ -54,7 +54,10 @@ const TicketTimeline = ({ ticketTimeline }) => {
                                     <div>
                                         {entry && (
                                             <p className="text-gray-500 text-sm p-1">
-                                                <span>{entry.user} has changed the status from {entry.pre_status} to {entry.post_status}.</span>  <span className="text-xs text-gray-500">{getTimeline(entry.date_of_change)}</span>
+                                                {entry.pre_status && entry.post_status === "" ? 
+                                                <span>{entry.user} has created the ticket.</span> : 
+                                                <span>{entry.user} has changed the status from {entry.pre_status} to {entry.post_status}.</span> 
+                                                }
                                             </p>
                                         )}
                                     </div>
