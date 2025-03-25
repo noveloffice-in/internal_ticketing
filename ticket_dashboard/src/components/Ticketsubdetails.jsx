@@ -155,7 +155,7 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                             }} className="text-black" />
                             {showAssignee && (
                             <div className="flex relative z-10">
-                                <ul className="absolute top-full right-0 bg-white border border-gray-300 rounded-md shadow-lg w-60">
+                                <ul className="absolute top-full right-0 bg-white border border-gray-300 rounded-md shadow-lg w-60 max-h-60 overflow-y-auto">
                                     {assigneeList.map((assignee, index) => (
                                         <li key={index} className="px-4 py-2 hover:bg-gray-100 cursor-pointer" onClick={() => {
                                             handleAssigneeChange(assignee, ticketAssignee || subdetails.assigned_to_full_name);
