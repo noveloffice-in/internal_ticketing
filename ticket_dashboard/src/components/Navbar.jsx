@@ -48,7 +48,20 @@ export default function Navbar({ toggleSidebar }) {
 
                     <button
                         className="text-gray-600 text-2xl p-2 relative"
-                        onClick={() => setDropdownOpen(!dropdownOpen)}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setDropdownOpen(!dropdownOpen);
+                            
+                            // Add event listener to close when clicking outside
+                            if (!dropdownOpen) {
+                                setTimeout(() => {
+                                    document.addEventListener('click', function closeDropdown(e) {
+                                        setDropdownOpen(false);
+                                        document.removeEventListener('click', closeDropdown);
+                                    });
+                                }, 0);
+                            }
+                        }}
                     >
                         <div className="w-10 h-10 text-center rounded-full flex items-center justify-center text-base text-white bg-[rgb(24,161,161)] mr-2">
                             {user_icon}
