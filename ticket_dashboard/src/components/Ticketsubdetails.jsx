@@ -153,6 +153,7 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                                             toast.success("Assigned to updated successfully",
                                                 {
                                                     position: "bottom-right",
+                                                    autoClose: 1000,
                                                 }
                                             );
                                         }}>
@@ -181,6 +182,7 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                                                 toast.success("Department updated successfully",
                                                     {
                                                         position: "bottom-right",
+                                                        autoClose: 1000,
                                                     }
                                                 );
                                             }}>
@@ -232,6 +234,7 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                                         handleDateChange(dueDateData);
                                         toast.success("Due date updated successfully", {
                                             position: "bottom-right",
+                                            autoClose: 1000,
                                         });
                                     }}
                                     dateFormat="dd-MM-yyyy"
@@ -262,6 +265,7 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                                                     setShowStatus(false);
                                                     toast.success("Status updated successfully", {
                                                         position: "bottom-right",
+                                                        autoClose: 1000,
                                                     });
                                                 }}
                                             >
@@ -288,6 +292,7 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                                                 setShowPriority(false);
                                                 toast.success("Priority updated successfully", {
                                                     position: "bottom-right",
+                                                    autoClose: 1000,
                                                 });
                                             }}>
                                                 {priority}

@@ -76,6 +76,11 @@ const TicketMessages = ({ ticketMessages }) => {
                     <div className="flex items-center justify-center">
                       <p className="text-gray-500 text-sm flex items-center justify-center mr-1">{msg.message}</p>
                       <a href={`http://10.80.4.63/${msg.attachment_url}`} target="_blank" className="text-blue-500 text-sm flex items-center justify-center hover:text-blue-700"> {msg.attachment_url.split('/files/').pop()}</a>
+                      <p className="text-gray-500 text-sm flex items-center justify-center ml-1">on</p>
+                      <p className="text-gray-500 text-sm flex items-center justify-center ml-1">
+                      {new Date(msg.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}{', '}
+                      {new Date(msg.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
+                      </p>
                     </div>
                   )}
                 </div>
