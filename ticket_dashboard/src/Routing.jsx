@@ -8,7 +8,7 @@ const Login = lazy(() => import("./pages/Login"));
 
 const Routing = () => {
     return (
-        <Router>
+        <Router basename='/ticket_dashboard'>
             <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
                 <Routes>
                     <Route path="/login" element={<Login />} /> 
