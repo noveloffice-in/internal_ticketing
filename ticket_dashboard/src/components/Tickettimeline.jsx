@@ -1,25 +1,41 @@
-import { useParams, Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Timelinemodal from "./Timelinemodal";
+import io from "socket.io-client";
+import { useFrappePostCall } from "frappe-react-sdk";
 
-const getTimeline = (date) => {
-    const today = new Date();
-    const entryDate = new Date(date);
-    const timeDiff = today - entryDate;
-    const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-    if (daysDiff === 0) {
-        return "Today";
-    } else if (daysDiff === 1) {
-        return "Yesterday";
-    } else {
-        return `${daysDiff} days ago`;
-    }
-}
+// const getTimeline = (date) => {
+//     const today = new Date();
+//     const entryDate = new Date(date);
+//     const timeDiff = today - entryDate;
+//     const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+//     if (daysDiff === 0) {
+//         return "Today";
+//     } else if (daysDiff === 1) {
+//         return "Yesterday";
+//     } else {
+//         return `${daysDiff} days ago`;
+//     }
+// }
 
 
-const TicketTimeline = ({ ticketTimeline }) => {
+const TicketTimeline = ({ ticketID }) => {
     const [showTimeline, setShowTimeline] = useState(false);
+    const [ticketTimeline, setTicketTimeline] = useState([]);
+    const { call: getTicketTimeline } = useFrappePostCall("internal_ticketing.ticketing_api.get_ticket_timeline");
+    const socket = io("http://10.80.4.63:9001");
 
+    useEffect(() => {
+        getTicketTimeline({ ticket_id: ticketID }).then((response) => {
+            setTicketTimeline(response.message);
+        });
+    }, [ticketID]);
+
+    socket.on("ticket_updated", (updatedTicket) => {
+        getTicketTimeline({ ticket_id: ticketID }).then((response) => {
+            setTicketTimeline(response.message);
+        });
+    });
+    
     return (
         <div>
             <div className="bg-white p-3 shadow-md rounded-2xl w-full">

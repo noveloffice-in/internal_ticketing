@@ -5,6 +5,9 @@ import { useFrappeAuth } from "frappe-react-sdk";
 import { useFrappePostCall, useFrappeFileUpload } from "frappe-react-sdk";
 import Cookies from "js-cookie";
 import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+
 const TextEditor = ({ editorText, setEditorText, setMessageAdded, messageAdded }) => {
     const { upload } = useFrappeFileUpload();
     const fullName = Cookies.get('full_name');
@@ -113,7 +116,10 @@ const TextEditor = ({ editorText, setEditorText, setMessageAdded, messageAdded }
                 />
                 <ToastContainer />
             </div>
+
         </div>
+
+
     )
 }
 

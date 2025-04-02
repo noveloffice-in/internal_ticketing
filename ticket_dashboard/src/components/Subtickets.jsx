@@ -1,11 +1,18 @@
 import { useParams, Link } from "react-router-dom";
 import CreateTicketModal from "./CreateTicketModal";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BsCalendar } from "react-icons/bs";
+import { useFrappePostCall } from "frappe-react-sdk";
+import io from "socket.io-client";
 
+const socket = io("http://10.80.4.63:9001");
 
-const Subtickets = ({ compHeader, suborParentTicketInfo, parentTicketId }) => {
+const Subtickets = ({ compHeader, ticketID, parentTicketId }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [suborParentTicketInfo, setSuborParentTicketInfo] = useState([]);
+
+    const { call: getSubTicketInfo } = useFrappePostCall("internal_ticketing.ticketing_api.get_sub_ticket_info");
+    const { call: getParentTicketInfo } = useFrappePostCall("internal_ticketing.ticketing_api.get_parent_ticket");
 
     const openModal = () => {
         setIsModalOpen(true);
@@ -14,6 +21,34 @@ const Subtickets = ({ compHeader, suborParentTicketInfo, parentTicketId }) => {
     const closeModal = () => {
         setIsModalOpen(false);
     };
+
+    useEffect(() => {
+        if (compHeader === "Subtickets") {  
+            getSubTicketInfo({ ticket_id: ticketID }).then((response) => {
+                setSuborParentTicketInfo(response.message);
+            });
+        }
+
+        if (compHeader === "Parent Ticket") {
+            getParentTicketInfo({ ticket_id: ticketID }).then((response) => {
+                setSuborParentTicketInfo(response.message);
+            });
+        }
+    }, [ticketID]);
+
+    socket.on("ticket_updated", (data) => {
+        if (compHeader === "Subtickets") {  
+            getSubTicketInfo({ ticket_id: ticketID }).then((response) => {
+                setSuborParentTicketInfo(response.message);
+            });
+        }
+
+        if (compHeader === "Parent Ticket") {
+            getParentTicketInfo({ ticket_id: ticketID }).then((response) => {
+                setSuborParentTicketInfo(response.message);
+            });
+        }
+    }); 
 
     return (
 

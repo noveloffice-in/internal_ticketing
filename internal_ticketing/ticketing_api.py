@@ -1,4 +1,9 @@
 import frappe
+import requests
+
+
+global Node_URL 
+Node_URL = "http://10.80.4.63:9001"
 
 @frappe.whitelist()
 def get_user_department(user_id: str):
@@ -53,16 +58,14 @@ def get_ticket_count_by_department(department, user_permission_type, user_id):
                 tickets.assigned_department = %s
             AND
                 tickets.assigned_to = %s
-            OR 
-                tickets.visible_for_entire_team = 1
             GROUP BY 
                 status.name
         """
         result = frappe.db.sql(query, [department, user_id], as_dict=True)
-
-    result = sorted(result, key=lambda x: ticket_status_order.index(x['ticket_status']))
+    
     all_tickets_count = sum(item['count'] for item in result)
     result.insert(0, {'ticket_status': 'All Tickets', 'count': all_tickets_count})
+    result = sorted(result, key=lambda x: ticket_status_order.index(x['ticket_status']))
     return result
 
 @frappe.whitelist()
@@ -87,10 +90,17 @@ def get_ticket_list(department, user_permission_type, user_id):
                 tickets.assigned_to = users.name
             WHERE 
                 tickets.assigned_department = %s
+                AND 
+                (
+                    tickets.ticket_status NOT IN ('Cancelled Tickets', 'Solved Tickets') 
+                    OR 
+                    (tickets.ticket_status IN ('Cancelled Tickets', 'Solved Tickets') 
+                        AND tickets.creation >= DATE_SUB(NOW(), INTERVAL 7 DAY))
+                )
             ORDER BY 
                 tickets.creation DESC
             """
-        result = frappe.db.sql(query, department, as_dict=True)
+        result = frappe.db.sql(query, department , as_dict=True)
 
     elif user_permission_type == "Member":
         query = """
@@ -110,10 +120,15 @@ def get_ticket_list(department, user_permission_type, user_id):
                 tickets.assigned_to = users.name
             WHERE 
                 tickets.assigned_department = %s
-            AND
+                AND
+                (
+                    tickets.ticket_status NOT IN ('Cancelled Tickets', 'Solved Tickets') 
+                    OR 
+                    (tickets.ticket_status IN ('Cancelled Tickets', 'Solved Tickets') 
+                        AND tickets.creation >= DATE_SUB(NOW(), INTERVAL 7 DAY))
+                )
+                AND
                 tickets.assigned_to = %s
-            OR 
-                tickets.visible_for_entire_team = 1
             ORDER BY 
                 tickets.creation DESC
             """
@@ -167,21 +182,23 @@ def get_ticket_sub_details(ticket_id):
             user_query = """
                 SELECT designation, CONCAT(UPPER(LEFT(first_name, 1)), IF(last_name = '', '', UPPER(LEFT(last_name, 1)))) AS profile, full_name
                 FROM `tabUser` 
-                WHERE name IN (%s, %s)
+                WHERE name = %s
             """
-            user_result = frappe.db.sql(user_query, (created_by, result[0].get('assigned_to')), as_dict=True)
-            if len(user_result) == 2:
-                result[0]['owner_designation'] = user_result[0].get('designation')
-                result[0]['owner_full_name'] = user_result[0].get('full_name')
-                result[0]['owner_profile'] = user_result[0].get('profile')
-                result[0]['assigned_to_full_name'] = user_result[1].get('full_name')
-                result[0]['assigned_to_profile'] = user_result[1].get('profile')
-            elif len(user_result) == 1:
-                result[0]['owner_designation'] = user_result[0].get('designation')
-                result[0]['owner_full_name'] = user_result[0].get('full_name')
-                result[0]['owner_profile'] = user_result[0].get('profile')
-                result[0]['assigned_to_full_name'] = user_result[0].get('full_name')
-                result[0]['assigned_to_profile'] = user_result[0].get('profile')
+            user_result = frappe.db.sql(user_query, (created_by), as_dict=True)
+            
+            result[0]['owner_designation'] = user_result[0].get('designation')
+            result[0]['owner_full_name'] = user_result[0].get('full_name')
+            result[0]['owner_profile'] = user_result[0].get('profile')
+
+            assigned_to_query = """
+                SELECT CONCAT(UPPER(LEFT(first_name, 1)), IF(last_name = '', '', UPPER(LEFT(last_name, 1)))) AS profile, full_name
+                FROM `tabUser` 
+                WHERE name = %s
+            """ 
+            assigned_to_result = frappe.db.sql(assigned_to_query, (result[0].get('assigned_to')), as_dict=True)
+            result[0]['assigned_to_full_name'] = assigned_to_result[0].get('full_name')
+            result[0]['assigned_to_profile'] = assigned_to_result[0].get('profile')
+
 
     return result
 
@@ -412,6 +429,54 @@ def update_ticket_assignee(ticket_id, assignee):
         ticket = frappe.get_doc("Internal Tickets", ticket_id)
         ticket.assigned_to = assignee
         ticket.save()
+        headers = {"Content-Type": "application/json"}
+        requests.post(Node_URL, headers=headers)
         return {"success": True, "message": "Ticket assignee updated successfully"}
+    except Exception as e:
+        return {"error": str(e)}
+    
+
+@frappe.whitelist()
+def get_ticket_created_by_user(user_id):
+    query = """
+        SELECT t.name, t.owner,u.full_name as owner_name, t.subject, t.creation, t.assigned_department, t.assigned_to, t.ticket_status, t.priority, t.due_date
+        FROM `tabInternal Tickets` t
+        LEFT JOIN `tabUser` u ON t.owner = u.name
+        WHERE t.owner = %s
+    """
+    result = frappe.db.sql(query, user_id, as_dict=True)
+    return result
+
+@frappe.whitelist()
+def get_ticket_history():
+    query = """
+        SELECT t.name, t.subject, t.creation, t.assigned_department, t.assigned_to, t.ticket_status, t.priority, t.due_date
+        FROM `tabInternal Tickets` t
+        WHERE t.ticket_status IN (%s, %s)
+    """
+    result = frappe.db.sql(query, ["Cancelled Tickets","Solved Tickets"], as_dict=True)
+    return result
+
+
+@frappe.whitelist()
+def get_all_attachments(ticket_id):
+    query = """
+        SELECT d.is_attachment, d.attachment_url, d.sender, d.date, d.message
+        FROM `tabInternal Ticket Description Table` d
+        WHERE d.is_attachment = 1 AND d.attachment_url IS NOT NULL AND d.parent = %s
+    """
+    result = frappe.db.sql(query, ticket_id, as_dict=True)
+    return result
+
+
+@frappe.whitelist()
+def close_ticket_status(ticket_id, status):
+    if not ticket_id or not status:
+        return {"error": "Ticket ID and status are required"}
+    try:
+        ticket = frappe.get_doc("Internal Tickets", ticket_id)
+        ticket.ticket_status = status
+        ticket.save()
+        return {"success": True, "message": "Ticket status updated successfully"}
     except Exception as e:
         return {"error": str(e)}

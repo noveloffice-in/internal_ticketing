@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
-import { FaBars, FaHistory } from "react-icons/fa";
-import { PiTicketBold } from "react-icons/pi";
+import { FaBars, FaHistory, FaPaperPlane } from "react-icons/fa";
+import { BsFillTicketFill } from "react-icons/bs";
+import { useEffect } from "react";
 
 export default function Sidebar({ isOpen, toggleSidebar }) {
     return (
@@ -14,17 +15,19 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
                     className="cursor-pointer font-bold text-black"
                     size={20}
                 />
+                
 
                 {/* Sidebar Links */}
                 
                 {[
-                    { icon: FaHistory, text: "Ticket History", path: "/dashboard/tickets-history" },
-                    { icon: PiTicketBold , text: "View Ticket", path: "/dashboard/ticket" }
+                    { icon: BsFillTicketFill, size: 20, text: "View Ticket", path: "/dashboard/view_tickets" },
+                    { icon: FaPaperPlane, size: 20, text: "Sent Tickets", path: "/dashboard/sent_tickets" },
+                    { icon: FaHistory, size: 20, text: "Ticket History", path: "/dashboard/ticket_history" }
                 ].map((item, index) => (
                     <Link
                         key={index}
                         to={item.path}
-                        className="flex items-center gap-4 p-2 mt-2 rounded-lg cursor-pointer hover:bg-gray-700 transition font-bold"
+                        className="flex text-lg items-center gap-4 p-2 mt-2 rounded-lg cursor-pointer hover:bg-[rgb(177,216,216)] hover:text-white transition font-bold"
                     >
                         <item.icon size={30} />
                         {isOpen && <span>{item.text}</span>}

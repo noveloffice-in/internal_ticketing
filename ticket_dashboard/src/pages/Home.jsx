@@ -10,11 +10,11 @@ import { useFrappeAuth, useFrappePostCall } from "frappe-react-sdk";
 import { BiTimeFive } from "react-icons/bi";
 import { BsCalendar } from "react-icons/bs";
 import Cookies from "js-cookie";
-import { io } from "socket.io-client";
+import io from "socket.io-client";
+import { useParams } from "react-router-dom";
 
 const Home = () => {
   const { getUserCookie } = useFrappeAuth();
-  const [ticketCreated, setTicketCreated] = useState(0);
   const [ticketCount, setTicketCount] = useState([]);
   const [ticketList, setTicketList] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -27,23 +27,33 @@ const Home = () => {
   const [userDepartment, setUserDepartment] = useState("");
   const [userPermissionType, setUserPermissionType] = useState("");
   const [messages, setMessages] = useState([]);
-
+  const { ticketId } = useParams();
   Cookies.set(getUserCookie);
   const { call: getUserDepartment } = useFrappePostCall("internal_ticketing.ticketing_api.get_user_department");
+  const socket = io("http://10.80.4.63:9001");
 
+  socket.on("ticket_updated", (updatedTicket) => {
+    console.log("🔄 Ticket update received from Node:", updatedTicket);
+    if (userDepartment && userPermissionType) {
+      getTicketCountByDepartment(userDepartment, userPermissionType, Cookies.get('user_id'));
+      getTicketList(userDepartment, userPermissionType, Cookies.get('user_id'));
+    }
+  });
 
+  socket.on("new_ticket", (newTicket) => {
+    console.log("🔄 New ticket received from Node:", newTicket);
+    if (userDepartment && userPermissionType) {
+      getTicketCountByDepartment(userDepartment, userPermissionType, Cookies.get('user_id'));
+      getTicketList(userDepartment, userPermissionType, Cookies.get('user_id'));
+    }
+  });
 
   useEffect(() => {
     getUserDepartment({
       user_id: Cookies.get('user_id')
-
     }).then((res) => {
       setUserDepartment(res['message'][0]['department']);
       setUserPermissionType(res['message'][0]['user_permission_type']);
-      console.log("User Permission Type", userPermissionType);
-      console.log("User Department", userDepartment);
-      console.log("User ID", Cookies.get('user_id'));
-
       getTicketCountByDepartment(userDepartment, userPermissionType, Cookies.get('user_id'));
       getTicketList(userDepartment, userPermissionType, Cookies.get('user_id'));
     }).catch((err) => {
@@ -51,36 +61,12 @@ const Home = () => {
     })
   }, [userDepartment]);
 
-  useEffect(() => {
-    const socket = new WebSocket("ws://10.80.4.63:9000");
-
-    socket.onopen = () => {
-      console.log("Connected to Frappe WebSocket");
-    };
-
-    socket.onmessage = (event) => {
-      console.log("Message from server:", event.data);
-    };
-
-    socket.onerror = (error) => {
-      console.error("WebSocket Error:", error);
-    };
-
-    socket.onclose = () => {
-      console.log("WebSocket disconnected");
-    };
-
-  }, []);
-
-
   const openModal = () => {
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
-    getTicketCountByDepartment(userDepartment, userPermissionType, Cookies.get('user_id'));
-    getTicketList(userDepartment, userPermissionType, Cookies.get('user_id'));
   };
 
   const getTicketCountByDepartment = (userDepartment, userPermissionType, userId) => {
@@ -111,12 +97,10 @@ const Home = () => {
       })
   }
 
-
   const handleCardClick = (ticketStatus) => {
     setSelectedTicket(ticketStatus);
     setActiveCard(ticketStatus);
   }
-
 
   return (
 
@@ -150,7 +134,7 @@ const Home = () => {
       {/* Ticket List */}
       <div className="p-4 shadow-2xl rounded-lg bg-white mt-3">
         <div className="flex justify-between items-center px-4 my-2">
-          <h2 className="text-xl font-bold" >{selectedTicket ? selectedTicket : "All Tickets"}</h2>
+          <h2 className="text-xl font-bold" >{selectedTicket ? selectedTicket : "All Tickets List"}</h2>
         </div>
         <hr className="border-gray-200 mt-4" />
         <div className="p-2 rounded-lg bg-white cursor-pointer overflow-y-auto max-h-[600px] scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100 flex flex-col gap-1 mt-2">
@@ -202,15 +186,18 @@ const Home = () => {
                       </div>
                     </div>
                     <div className="flex flex-col gap-2 items-end">
-                      <p className={`rounded-2xl text-center py-1 px-4 w-fit text-sm ${ticket.ticket_status === "Open" ? "bg-red-100 text-red-600" :
-                        ticket.ticket_status === "Working Tickets" ? "bg-green-100 text-green-600" :
-                          ticket.ticket_status === "Solved Tickets " ? "bg-green-100 text-green-600" :
-                            ticket.ticket_status === "Sent Tickets" ? "bg-purple-100 text-purple-600" :
-                              ticket.ticket_status === "Unassigned Tickets" ? "bg-orange-100 text-orange-600" :
-                                ticket.ticket_status === "Overdue Tickets" ? "bg-red-100 text-red-600" :
-                                  ticket.ticket_status === "Closed Tickets" ? "bg-gray-100 text-gray-600" :
-                                    "bg-pink-100 text-pink-600"}`}>
-                        {ticket.ticket_status.split(' ')[0]}
+                      <p className={`rounded-2xl text-center py-1 px-4 w-fit text-sm 
+                      ${ticket.ticket_status === "Open" ? "bg-blue-200 text-red-600" :
+                          ticket.ticket_status === "Working Tickets" ? "bg-pink-100 text-green-600" :
+                            ticket.ticket_status === "Solved Tickets " ? "bg-green-100 text-green-600" :
+                              ticket.ticket_status === "Sent Tickets" ? "bg-purple-100 text-purple-600" :
+                                ticket.ticket_status === "Unassigned Tickets" ? "bg-orange-100 text-orange-600" :
+                                  ticket.ticket_status === "Overdue Tickets" ? "bg-red-100 text-red-600" :
+                                    ticket.ticket_status === "Closed Tickets" ? "bg-purple-100 text-gray-600" :
+                                      ticket.ticket_status === "On-Hold Tickets" ? "bg-gray-100 text-gray-600" :
+                                        ticket.ticket_status === "Needs Verification" ? "bg-purple-100 text-purple-600" :
+                                          "bg-pink-100 text-pink-600"}`}>
+                        {ticket.ticket_status.split('Tickets')[0]}
                       </p>
 
                       <div className="text-center w-fit text-sm flex items-center gap-1">
@@ -234,7 +221,10 @@ const Home = () => {
         </div>
       </div>
     </div>
+
   );
 };
 
 export default Home;
+
+

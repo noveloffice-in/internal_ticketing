@@ -4,32 +4,51 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { CiEdit } from "react-icons/ci";
 import { useFrappePostCall, useFrappeAuth } from "frappe-react-sdk";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Cookies from 'js-cookie';
+import io from "socket.io-client";
 
-const TicketSubDetails = ({ ticketSubDetails }) => {
+const TicketSubDetails = ({ ticketID }) => {
     const { ticketId } = useParams();
     const { currentUser } = useFrappeAuth();
     const fullName = Cookies.get('full_name');
     const [departmentList, setDepartmentList] = useState([]);
     const [statusList, setStatusList] = useState([]);
     const [assigneeList, setAssigneeList] = useState([]);
+    const [ticketSubDetails, setTicketSubDetails] = useState([]);
+    const socket = io("http://10.80.4.63:9001");
 
     const { call: get_subticket_list_details } = useFrappePostCall("internal_ticketing.ticketing_api.get_subticket_list_details");
+    const { call: getTicketSubDetails } = useFrappePostCall("internal_ticketing.ticketing_api.get_ticket_sub_details");
 
     useEffect(() => {
-        if (ticketSubDetails[0] ) {
-            get_subticket_list_details({department: ticketSubDetails[0].assigned_department})
-                .then((response) => {
-                    setDepartmentList(response.message.departments);
-                    setStatusList(response.message.statuses);
-                    setAssigneeList(response.message.assignees);
-                })
-                .catch((error) => {
-                    console.error("Error fetching department list:", error);
-                });
-        }
-    }, [ticketSubDetails]);
+        getTicketSubDetails({ ticket_id: ticketId }).then((response) => {
+            setTicketSubDetails(response.message);
+            get_subticket_list_details({ department: response.message[0].assigned_department }).then((response) => {
+                setDepartmentList(response.message.departments);
+                setStatusList(response.message.statuses);
+                setAssigneeList(response.message.assignees);
+            })
+            .catch((error) => {
+                console.error("Error fetching department list:", error);
+            });
+        });
+    }, [ticketID]);
+
+    socket.on("ticket_updated", (updatedTicket) => {
+        getTicketSubDetails({ ticket_id: ticketId }).then((response) => {
+            setTicketSubDetails(response.message);
+            get_subticket_list_details({ department: response.message[0].assigned_department }).then((response) => {
+                setDepartmentList(response.message.departments);
+                setStatusList(response.message.statuses);
+                setAssigneeList(response.message.assignees);
+            })
+            .catch((error) => {
+                console.error("Error fetching department list:", error);
+            });
+        });
+    });
 
     const [dueDate, setDueDate] = useState(ticketSubDetails.due_date);
     const [showCalendar, setShowCalendar] = useState(false);
@@ -51,7 +70,7 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
     const { call: update_ticket_due_date } = useFrappePostCall("internal_ticketing.ticketing_api.update_ticket_due_date");
     const { call: update_ticket_department } = useFrappePostCall("internal_ticketing.ticketing_api.update_ticket_department");
     const { call: update_ticket_assignee } = useFrappePostCall("internal_ticketing.ticketing_api.update_ticket_assignee");
-    
+
     const handleStatusChange = (previousStatus, status) => {
         setTicketStatus(status);
         update_ticket_status({ ticket_id: ticketId, status: status, current_user: currentUser, previous_status: previousStatus, full_name: fullName })
@@ -76,26 +95,34 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
         setTicketAssignee(assignee.full_name);
         if (previousUser === "Unassigned") {
             update_ticket_status({ ticket_id: ticketId, status: "Open Tickets", current_user: currentUser, previous_status: "Unassigned Tickets", full_name: fullName })
-            .then((response) => {
-                console.log("response", response);
-                update_ticket_assignee({ ticket_id: ticketId, assignee: assignee.email })
-                    .then((response) => {
-                    })
-                    .catch((error) => {
-                        console.error("Error updating assignee:", error);
-                    });
-            })
-            .catch((error) => {
-                console.error("Error updating status:", error);
-            });
+                .then((response) => {
+                    console.log("response", response);
+                    update_ticket_assignee({ ticket_id: ticketId, assignee: assignee.email })
+                        .then((response) => {
+                        })
+                        .catch((error) => {
+                            console.error("Error updating assignee:", error);
+                        });
+                })
+                .catch((error) => {
+                    console.error("Error updating status:", error);
+                });
         }
-        
+        else {
+            update_ticket_assignee({ ticket_id: ticketId, assignee: assignee.email })
+                .then((response) => {
+                })
+                .catch((error) => {
+                    console.error("Error updating assignee:", error);
+                });
+        }
+
     }
 
     const handleCalendarClick = (date) => {
         setShowCalendar(!showCalendar);
         setDueDate(date);
-        
+
     };
 
     const handleDepartmentChange = (department) => {
@@ -142,7 +169,7 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                             <CiEdit onClick={(e) => {
                                 e.stopPropagation();
                                 setShowAssignee(!showAssignee);
-                                
+
                                 // Add event listener to close when clicking outside
                                 if (!showAssignee) {
                                     setTimeout(() => {
@@ -154,37 +181,36 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                                 }
                             }} className="text-black" />
                             {showAssignee && (
-                            <div className="flex relative z-10">
-                                <ul className="absolute top-full right-0 bg-white border border-gray-300 rounded-md shadow-lg w-60 max-h-60 overflow-y-auto">
-                                    {assigneeList.map((assignee, index) => (
-                                        <li key={index} className="px-4 py-2 hover:bg-gray-100 cursor-pointer" onClick={() => {
-                                            handleAssigneeChange(assignee, ticketAssignee || subdetails.assigned_to_full_name);
-                                            setShowAssignee(false);
-                                            toast.success("Assigned to updated successfully",
-                                                {
-                                                    position: "bottom-right",
-                                                    autoClose: 1000,
-                                                }
-                                            );
-                                        }}>
-                                            {assignee.full_name}
-                                            
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
+                                <div className="flex relative z-10">
+                                    <ul className="absolute top-full right-0 bg-white border border-gray-300 rounded-md shadow-lg w-60 max-h-60 overflow-y-auto">
+                                        {assigneeList.map((assignee, index) => (
+                                            <li key={index} className="px-4 py-2 hover:bg-gray-100 cursor-pointer" onClick={() => {
+                                                handleAssigneeChange(assignee, ticketAssignee || subdetails.assigned_to_full_name);
+                                                setShowAssignee(false);
+                                                toast.success("Assigned to updated successfully",
+                                                    {
+                                                        position: "bottom-right",
+                                                        autoClose: 1000,
+                                                    }
+                                                );
+                                            }}>
+                                                {assignee.full_name}
+
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
                             )}
                         </span>
-                        <ToastContainer />
                     </div>
 
                     <div className="text-gray-500 flex items-center w-full mt-3">
-                        <strong className="mr-2 text-sm">Department: </strong> { ticketDepartment || subdetails.assigned_department}
+                        <strong className="mr-2 text-sm">Department: </strong> {ticketDepartment || subdetails.assigned_department}
                         <span className="ml-2 cursor-pointer text-blue-500">
                             <CiEdit onClick={(e) => {
                                 e.stopPropagation();
                                 setShowDepartment(!showDepartment);
-                                
+
                                 // Add event listener to close when clicking outside
                                 if (!showDepartment) {
                                     setTimeout(() => {
@@ -202,12 +228,10 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                                             <li key={index} className="px-4 py-2 hover:bg-gray-100 cursor-pointer" onClick={() => {
                                                 handleDepartmentChange(department);
                                                 setShowDepartment(false);
-                                                toast.success("Department updated successfully",
-                                                    {
-                                                        position: "bottom-right",
-                                                        autoClose: 1000,
-                                                    }
-                                                );
+                                                toast.success("Department to updated successfully", {
+                                                    position: "bottom-right",
+                                                    autoClose: 1000
+                                                });
                                             }}>
                                                 {department}
                                             </li>
@@ -216,11 +240,11 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                                 </div>
                             )}
                         </span>
-                        <ToastContainer />
+
                     </div>
 
                     <div className="text-gray-500 flex items-center flex-wrap w-full mt-3 relative">
-                        <strong className="mr-2 text-sm">Due Date: </strong> 
+                        <strong className="mr-2 text-sm">Due Date: </strong>
                         {dueDate ? (
                             <span>{dueDate.toLocaleDateString('en-US', {
                                 month: 'short',
@@ -249,7 +273,7 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                                 }, 0);
                             }
                         }} className="ml-2 cursor-pointer text-black" />
-                        
+
                         {showCalendar && (
                             <div className="absolute top-full left-0 z-10 mt-1">
                                 <DatePicker
@@ -272,12 +296,12 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                                     }}
                                     dateFormat="dd-MM-yyyy"
                                     inline
-                                    
+
                                 />
 
                             </div>
                         )}
-                        <ToastContainer />
+
                     </div>
 
                     <div className={`text-600 text-gray-500 flex items-center w-full mt-3 `}>
@@ -321,7 +345,7 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                                 </div>
                             )}
                         </span>
-                        <ToastContainer />
+
                     </div>
 
                     <div className="text-gray-500 flex items-center flex-wrap w-full mt-3">
@@ -359,7 +383,7 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                                 </div>
                             )}
                         </span>
-                        <ToastContainer />
+
                     </div>
 
                     <div className="text-gray-500 flex items-center text-xs mt-4 w-full">
@@ -375,9 +399,12 @@ const TicketSubDetails = ({ ticketSubDetails }) => {
                             return `${formattedDate} ${time}`;
                         })()}
                     </div>
-
+                    
                 </div>
             ))}
+            <ToastContainer />
+
+
         </div>
     )
 }

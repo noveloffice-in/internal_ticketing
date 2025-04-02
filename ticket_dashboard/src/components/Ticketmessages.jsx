@@ -1,17 +1,26 @@
-import { useParams, Link } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
-import { useFrappeAuth } from 'frappe-react-sdk';
+import { useFrappeAuth, useFrappePostCall } from 'frappe-react-sdk';
 import Cookies from 'js-cookie';
-const TicketMessages = ({ ticketMessages }) => {
+import io from "socket.io-client";
+
+const TicketMessages = ({ ticketID }) => {
 
   const { currentUser } = useFrappeAuth();
   const messagesEndRef = useRef(null);
-  const fullName = Cookies.get('full_name');
+  const [ticketMessages, setTicketMessages] = useState([]);
+  const { call: getTicketMessages } = useFrappePostCall("internal_ticketing.ticketing_api.get_ticket_messages");
+  const socket = io("http://10.80.4.63:9001");
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }
-  }, [ticketMessages]);
+    getTicketMessages({ ticket_id: ticketID }).then((response) => {
+      setTicketMessages(response.message);
+    });
+  }, [ticketID]);
+
+  socket.on("ticket_updated", (updatedTicket) => {
+    getTicketMessages({ ticket_id: ticketID }).then((response) => {
+      setTicketMessages(response.message);
+    });
+  });
 
   return (
     <div>
@@ -39,12 +48,12 @@ const TicketMessages = ({ ticketMessages }) => {
                               {msg.profile}
                             </div>
                           )}
-                          <div className={`flex gap-2 mt-2 ${msg.user === currentUser  ? 'mr-2 order-1' : 'ml-2'}`}>
+                          <div className={`flex gap-2 mt-2 ${msg.user === currentUser ? 'mr-2 order-1' : 'ml-2'}`}>
                             <p className="text-md text-gray-500 font-bold">{msg.sender}</p>
                           </div>
                         </div>
 
-                        <div className={`p-3 rounded ${msg.user === currentUser  ? 'bg-[rgb(208,233,233)] rounded-bl-lg rounded-tl-lg rounded-tr-lg' : 'bg-gray-100 rounded-br-lg rounded-tr-lg rounded-tl-lg'} mt-2 max-w-[50rem]`}>
+                        <div className={`p-3 rounded ${msg.user === currentUser ? 'bg-[rgb(208,233,233)] rounded-bl-lg rounded-tl-lg rounded-tr-lg' : 'bg-gray-100 rounded-br-lg rounded-tr-lg rounded-tl-lg'} mt-2 max-w-[50rem]`}>
                           <div className="text-gray-700 ">
                             {msg.status_change == 0
                               ? <p className="text-gray-600 text-lg break-words whitespace-normal overflow-hidden"> {msg.message}</p>
@@ -78,8 +87,8 @@ const TicketMessages = ({ ticketMessages }) => {
                       <a href={`http://10.80.4.63/${msg.attachment_url}`} target="_blank" className="text-blue-500 text-sm flex items-center justify-center hover:text-blue-700"> {msg.attachment_url.split('/files/').pop()}</a>
                       <p className="text-gray-500 text-sm flex items-center justify-center ml-1">on</p>
                       <p className="text-gray-500 text-sm flex items-center justify-center ml-1">
-                      {new Date(msg.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}{', '}
-                      {new Date(msg.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
+                        {new Date(msg.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}{', '}
+                        {new Date(msg.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
                       </p>
                     </div>
                   )}
@@ -87,7 +96,7 @@ const TicketMessages = ({ ticketMessages }) => {
               </div>
             ))
           )}
-          
+
 
 
           <div ref={messagesEndRef} />

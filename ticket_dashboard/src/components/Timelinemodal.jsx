@@ -43,7 +43,7 @@ const Modal = ({ onClose, ticketTimeline }) => {
                                     {/* Timeline Content */}
                                     <div>
                                         {entry && (
-                                            <p className="text-gray-500 text-sm p-1">
+                                            <div className="text-gray-500 text-sm p-1">
                                                 {entry && (
                                                     <p className="text-gray-500 text-sm ">
                                                         {entry.pre_status == null && entry.post_status == null ?
@@ -52,7 +52,7 @@ const Modal = ({ onClose, ticketTimeline }) => {
                                                         }
                                                     </p>
                                                 )}
-                                            </p>
+                                            </div>
                                         )}
 
                                     </div>
