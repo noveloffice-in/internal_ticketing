@@ -6,6 +6,7 @@ const Home = lazy(() => import("./pages/Home"));
 const TicketDetails = lazy(() => import("./pages/Ticketdetails"));
 const Login = lazy(() => import("./pages/Login"));
 const SentTicket = lazy(() => import("./pages/SentTicket"));
+const InvolvedParties = lazy(() => import("./pages/InvolvedParties"));
 const TicketHistory = lazy(() => import("./pages/TicketHistory"));
 const Routing = () => {
     return (
@@ -23,6 +24,7 @@ const Routing = () => {
                         <Route path="/dashboard/sent_tickets" element={<SentTicket />} />
                         <Route path="/dashboard/ticket_history" element={<TicketHistory />} />
                         <Route path="/dashboard/view_tickets" element={<Home />} />
+                        <Route path="/dashboard/involved_parties" element={<InvolvedParties />} />
                     </Route>
                 </Routes>
             </Suspense>

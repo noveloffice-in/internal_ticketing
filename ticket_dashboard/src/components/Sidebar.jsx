@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { FaBars, FaHistory, FaPaperPlane } from "react-icons/fa";
 import { BsFillTicketFill } from "react-icons/bs";
+import { IoTicketSharp } from "react-icons/io5";
+
 import { useEffect } from "react";
 
 export default function Sidebar({ isOpen, toggleSidebar }) {
@@ -22,7 +24,8 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
                 {[
                     { icon: BsFillTicketFill, size: 20, text: "View Ticket", path: "/dashboard/view_tickets" },
                     { icon: FaPaperPlane, size: 20, text: "Sent Tickets", path: "/dashboard/sent_tickets" },
-                    { icon: FaHistory, size: 20, text: "Ticket History", path: "/dashboard/ticket_history" }
+                    { icon: FaHistory, size: 20, text: "Ticket History", path: "/dashboard/ticket_history" },
+                    { icon: IoTicketSharp, size: 20, text: "Involved Parties", path: "/dashboard/involved_parties" }
                 ].map((item, index) => (
                     <Link
                         key={index}

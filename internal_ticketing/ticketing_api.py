@@ -523,3 +523,14 @@ def get_involved_parties(ticket_id):
     """
     result = frappe.db.sql(query, ticket_id, as_dict=True)
     return result
+
+@frappe.whitelist()
+def get_tickets_for_involved_parties(department_name):
+    query = """
+        SELECT t.name, t.subject, t.creation, t.assigned_department, t.assigned_to, t.ticket_status, t.priority, t.due_date
+        FROM `tabInternal Tickets` t
+        JOIN `tabInvolved Parties` ip ON t.name = ip.parent
+        WHERE ip.department_name = %s
+    """
+    result = frappe.db.sql(query, department_name, as_dict=True)
+    return result
