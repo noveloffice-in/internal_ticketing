@@ -2,7 +2,7 @@ import React from 'react';
 import { IoClose } from "react-icons/io5";
 import { useState, useEffect } from 'react';
 import { useFrappePostCall } from 'frappe-react-sdk';
-import { toast, ToastContainer } from 'react-toastify';
+import { Toaster, toast } from 'react-hot-toast';
 import MultiSelect from './MultiSelect';
 
 
@@ -85,11 +85,9 @@ const CreateTicketModal = ({ onClick, isOpen, isSubticket, parentTicketId }) => 
     const handleSubmit = (e) => {
         e.preventDefault();
         createTicket({ form_data: formData }).then((data) => {
+            console.log("data", data);
+            onClick();            
             toast.success("Ticket created successfully!");
-            setTimeout(() => {
-                onClick();
-            }, 1500);
-            
         }).catch((error) => {
             console.error("Error creating ticket:", error);
             toast("Error creating ticket. Please try again.");
@@ -227,9 +225,9 @@ const CreateTicketModal = ({ onClick, isOpen, isSubticket, parentTicketId }) => 
                             Create Ticket
                         </button>
                     </div>
-                    <ToastContainer />
+                    
                 </form>
-
+                <Toaster />
             </div>
         </div>
     );

@@ -1,1 +1,0 @@
-import{f as u,r as e,a as c,j as r,N as f}from"./index-kZWgRziL.js";const d=({children:a})=>{const{currentUser:s,updateCurrentUser:t}=u(),[o,n]=e.useState(!0),i=c();return e.useEffect(()=>{t().finally(()=>n(!1))},[t]),o?r.jsx("div",{children:"Loading..."}):s?a:r.jsx(f,{to:"/login",state:{from:i},replace:!0})};export{d as default};

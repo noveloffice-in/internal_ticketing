@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useFrappePostCall, useFrappeAuth } from 'frappe-react-sdk';
 import Cookies from 'js-cookie';
-import { ToastContainer, toast } from 'react-toastify';
+import { Toaster, toast } from 'react-hot-toast';
 
 const TicketButtons = ({ previousStatus }) => {
     const { ticketId } = useParams();
@@ -106,7 +106,7 @@ const TicketButtons = ({ previousStatus }) => {
                 >
                     Close Ticket
                 </button>
-                <ToastContainer />
+                <Toaster />
             </div>
         </div>
     );

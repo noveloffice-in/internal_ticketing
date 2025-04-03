@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Searchbar from "../components/Searchbar";
 import Button from "../components/Button";
-import { FaFilter, FaSort } from "react-icons/fa";
 import Cards from "../components/Cards";
+import { Toaster, toast } from 'react-hot-toast';
 import CreateTicketModal from "../components/CreateTicketModal";
 import { FaCircleCheck, FaCircleExclamation } from "react-icons/fa6";
 import { useFrappeAuth, useFrappePostCall } from "frappe-react-sdk";
@@ -220,8 +220,8 @@ const Home = () => {
           }
         </div>
       </div>
+      <Toaster />
     </div>
-
   );
 };
 

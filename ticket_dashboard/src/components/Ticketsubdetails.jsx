@@ -4,7 +4,8 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { CiEdit } from "react-icons/ci";
 import { useFrappePostCall, useFrappeAuth } from "frappe-react-sdk";
-import { ToastContainer, toast } from 'react-toastify';
+import { Toaster, toast } from 'react-hot-toast';
+
 import 'react-toastify/dist/ReactToastify.css';
 import Cookies from 'js-cookie';
 import io from "socket.io-client";
@@ -24,6 +25,7 @@ const TicketSubDetails = ({ ticketID }) => {
     const { call: get_subticket_list_details } = useFrappePostCall("internal_ticketing.ticketing_api.get_subticket_list_details");
     const { call: getTicketSubDetails } = useFrappePostCall("internal_ticketing.ticketing_api.get_ticket_sub_details");
     const { call: get_involved_parties } = useFrappePostCall("internal_ticketing.ticketing_api.get_involved_parties");
+    
     useEffect(() => {
         getTicketSubDetails({ ticket_id: ticketId }).then((response) => {
             setTicketSubDetails(response.message);
@@ -154,9 +156,6 @@ const TicketSubDetails = ({ ticketID }) => {
             });
     }
 
-
-
-
     return (
         <div className="flex flex-col items-start p-4 border rounded-2xl shadow-md bg-white w-full">
             {ticketSubDetails.map((subdetails, index) => (
@@ -199,8 +198,8 @@ const TicketSubDetails = ({ ticketID }) => {
                                                 setShowAssignee(false);
                                                 toast.success("Assigned to updated successfully",
                                                     {
-                                                        position: "bottom-right",
                                                         autoClose: 1000,
+                                                        position: "bottom-right",
                                                     }
                                                 );
                                             }}>
@@ -375,7 +374,7 @@ const TicketSubDetails = ({ ticketID }) => {
                                 }
                             }} className="text-black" />
                             {showPriority && (
-                                <div className="flex relative">
+                                <div className="flex relative z-10">
                                     <ul className="absolute top-full right-0 bg-white border border-gray-300 rounded-md shadow-lg w-40">
                                         {['High', 'Medium', 'Low'].map((priority, index) => (
                                             <li key={index} className="px-4 py-2 hover:bg-gray-100 cursor-pointer" onClick={() => {
@@ -431,9 +430,7 @@ const TicketSubDetails = ({ ticketID }) => {
 
                 </div>
             ))}
-            <ToastContainer />
-
-
+            <Toaster />
         </div>
     )
 }
