@@ -147,6 +147,7 @@ def create_ticket(form_data):
     location = form_data['location']
     team = form_data['team']
     assigned_to = form_data['assignedTo']
+    involved_departments = form_data['involved_departments']
 
     ticket = frappe.new_doc("Internal Tickets")
     ticket.assigned_department = assigned_department
@@ -163,6 +164,10 @@ def create_ticket(form_data):
         "user": frappe.session.user,
         "date_of_change": frappe.utils.now()
     })
+    for department in involved_departments:
+        ticket.append("involved_parties", {
+            "department_name": department
+        })
     ticket.save()
     frappe.publish_realtime('ticket_creation', {'ticket_id': ticket.name})
     return {"success": "Ticket created successfully"}
@@ -471,12 +476,50 @@ def get_all_attachments(ticket_id):
 
 @frappe.whitelist()
 def close_ticket_status(ticket_id, status):
-    if not ticket_id or not status:
-        return {"error": "Ticket ID and status are required"}
     try:
         ticket = frappe.get_doc("Internal Tickets", ticket_id)
         ticket.ticket_status = status
+        
+        # Add timeline entry for status change
+        ticket.append("ticket_timeline", {
+            "user": frappe.session.user,
+            "date_of_change": frappe.utils.now(),
+            "post_status": status
+        })
+
+        user_full_name = frappe.db.get_value("User", frappe.session.user, "full_name")
+        ticket.append("description", {
+            "sender": frappe.session.user,
+            "message": f"{user_full_name} closed the ticket",
+            "date": frappe.utils.now(),
+            "status_change": True
+        })
         ticket.save()
-        return {"success": True, "message": "Ticket status updated successfully"}
+        
+        return {
+            "message": "Ticket status updated successfully"
+        }
     except Exception as e:
-        return {"error": str(e)}
+        return {"error ticket": str(e)}
+    
+
+@frappe.whitelist()
+def get_involved_departments():
+    query = """
+        SELECT name
+        FROM `tabDepartments`
+    """
+    result = frappe.db.sql(query, as_dict=True)
+    return result
+
+
+
+@frappe.whitelist()
+def get_involved_parties(ticket_id):
+    query = """
+    SELECT department_name
+    FROM `tabInvolved Parties`
+    WHERE parent = %s
+    """
+    result = frappe.db.sql(query, ticket_id, as_dict=True)
+    return result

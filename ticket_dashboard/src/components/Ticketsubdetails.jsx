@@ -14,25 +14,31 @@ const TicketSubDetails = ({ ticketID }) => {
     const { currentUser } = useFrappeAuth();
     const fullName = Cookies.get('full_name');
     const [departmentList, setDepartmentList] = useState([]);
+    const [involveParties, setInvolveParties] = useState([]);
     const [statusList, setStatusList] = useState([]);
     const [assigneeList, setAssigneeList] = useState([]);
     const [ticketSubDetails, setTicketSubDetails] = useState([]);
+
     const socket = io("http://10.80.4.63:9001");
 
     const { call: get_subticket_list_details } = useFrappePostCall("internal_ticketing.ticketing_api.get_subticket_list_details");
     const { call: getTicketSubDetails } = useFrappePostCall("internal_ticketing.ticketing_api.get_ticket_sub_details");
-
+    const { call: get_involved_parties } = useFrappePostCall("internal_ticketing.ticketing_api.get_involved_parties");
     useEffect(() => {
         getTicketSubDetails({ ticket_id: ticketId }).then((response) => {
             setTicketSubDetails(response.message);
+            get_involved_parties({ ticket_id: ticketId }).then((response) => {
+                const parties = response.message.map(item => item.department_name);
+                setInvolveParties(parties);
+            })
             get_subticket_list_details({ department: response.message[0].assigned_department }).then((response) => {
                 setDepartmentList(response.message.departments);
                 setStatusList(response.message.statuses);
                 setAssigneeList(response.message.assignees);
             })
-            .catch((error) => {
-                console.error("Error fetching department list:", error);
-            });
+                .catch((error) => {
+                    console.error("Error fetching department list:", error);
+                });
         });
     }, [ticketID]);
 
@@ -44,9 +50,9 @@ const TicketSubDetails = ({ ticketID }) => {
                 setStatusList(response.message.statuses);
                 setAssigneeList(response.message.assignees);
             })
-            .catch((error) => {
-                console.error("Error fetching department list:", error);
-            });
+                .catch((error) => {
+                    console.error("Error fetching department list:", error);
+                });
         });
     });
 
@@ -64,6 +70,8 @@ const TicketSubDetails = ({ ticketID }) => {
 
     const [showDepartment, setShowDepartment] = useState(false);
     const [ticketDepartment, setTicketDepartment] = useState(ticketSubDetails.assigned_department);
+
+    const [involvedParties, setInvolvedParties] = useState([]);
 
     const { call: update_ticket_status } = useFrappePostCall("internal_ticketing.ticketing_api.update_ticket_status");
     const { call: update_ticket_priority } = useFrappePostCall("internal_ticketing.ticketing_api.update_ticket_priority");
@@ -144,8 +152,10 @@ const TicketSubDetails = ({ ticketID }) => {
             .catch((error) => {
                 console.error("Error updating date:", error);
             });
-
     }
+
+
+
 
     return (
         <div className="flex flex-col items-start p-4 border rounded-2xl shadow-md bg-white w-full">
@@ -386,6 +396,25 @@ const TicketSubDetails = ({ ticketID }) => {
 
                     </div>
 
+                    <div className="text-gray-500 flex items-center flex-wrap w-full mt-3 h-10 relative group">
+                        <strong className="mr-2 text-sm">Involved Parties: </strong>
+                        <div className="cursor-pointer">
+                            {involveParties.length > 0 ? (
+                                <span>
+                                    {involveParties.join(', ').substring(0, 20) + (involveParties.join(', ').length > 20 ? '...' : '')}
+                                    {involveParties.length > 0 && involveParties.join(', ').length > 20 && (
+                                        <div className="absolute left-0 -top-10 bg-white border border-gray-300 rounded-md shadow-lg p-2 z-10 w-full hidden group-hover:block">
+                                            {involveParties.join(', ')}
+                                        </div>
+                                    )}
+                                </span>
+                            ) : (
+                                <span>No Involved Parties</span>
+                            )}
+
+                        </div>
+                    </div>
+
                     <div className="text-gray-500 flex items-center text-xs mt-4 w-full">
                         <strong className="mr-2 text-sm">Ticket Creation: </strong>
                         {(() => {
@@ -399,7 +428,7 @@ const TicketSubDetails = ({ ticketID }) => {
                             return `${formattedDate} ${time}`;
                         })()}
                     </div>
-                    
+
                 </div>
             ))}
             <ToastContainer />

@@ -21,13 +21,7 @@ const TicketButtons = ({ previousStatus }) => {
             setAttachments(data);
         });
 
-        close_ticket_status({
-            ticket_id: ticketId,
-            status: "Solved Tickets"
-        }).then((data) => {
-            setCloseTicket(data);
-            console.log("data", data);
-        });
+    
     }, []);
 
     useEffect(() => {
@@ -101,6 +95,12 @@ const TicketButtons = ({ previousStatus }) => {
                         toast.success("Ticket closed successfully", {
                             position: "bottom-right",
                             autoClose: 1000,
+                        });
+                        close_ticket_status({
+                            ticket_id: ticketId,
+                            status: "Solved Tickets"
+                        }).then((data) => {
+                            console.log("ticket closed", data);
                         });
                     }}
                 >

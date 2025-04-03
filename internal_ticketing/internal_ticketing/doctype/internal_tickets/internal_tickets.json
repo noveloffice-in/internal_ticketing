@@ -16,6 +16,7 @@
   "due_date",
   "priority",
   "visible_for_entire_team",
+  "involved_parties",
   "ticket_timeline_section",
   "ticket_timeline",
   "approval_section_section",
@@ -140,11 +141,17 @@
    "fieldname": "visible_for_entire_team",
    "fieldtype": "Check",
    "label": "Visible for entire Team"
+  },
+  {
+   "fieldname": "involved_parties",
+   "fieldtype": "Table",
+   "label": "Involved Parties",
+   "options": "Involved Parties"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-03-24 19:15:52.105862",
+ "modified": "2025-04-02 14:22:57.451602",
  "modified_by": "Administrator",
  "module": "Internal Ticketing",
  "name": "Internal Tickets",

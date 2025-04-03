@@ -3,6 +3,8 @@ import { IoClose } from "react-icons/io5";
 import { useState, useEffect } from 'react';
 import { useFrappePostCall } from 'frappe-react-sdk';
 import { toast, ToastContainer } from 'react-toastify';
+import MultiSelect from './MultiSelect';
+
 
 const CreateTicketModal = ({ onClick, isOpen, isSubticket, parentTicketId }) => {
     const [departments, setDepartments] = useState([]);
@@ -23,8 +25,10 @@ const CreateTicketModal = ({ onClick, isOpen, isSubticket, parentTicketId }) => 
         status: 'Unassigned Tickets',
         priority: 'Medium',
         assignedTo: 'unassigned@noveloffice.in',
-        dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        involved_departments: []
     });
+    console.log("formData", formData);
 
     const { call: getAllDataforCreateTicket } = useFrappePostCall("internal_ticketing.ticketing_api.get_all_data_for_create_ticket");
 
@@ -124,6 +128,11 @@ const CreateTicketModal = ({ onClick, isOpen, isSubticket, parentTicketId }) => 
                                 ))}
                             </select>
                         </div>
+                    </div>
+
+                    <div className="mb-4 w-1/2 pr-2">
+                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="involved_departments"></label>
+                        <MultiSelect className="w-1/2" label="Invovled Departments" departments={departments} onChange={(e) => setFormData(prevState => ({ ...prevState, involved_departments: e }))} />
                     </div>
 
                     {departmentsWithLocation.includes(selectedDepartment) && (

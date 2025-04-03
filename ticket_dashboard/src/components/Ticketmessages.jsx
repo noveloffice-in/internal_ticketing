@@ -76,7 +76,8 @@ const TicketMessages = ({ ticketID }) => {
                 </div>
                 <div className="flex items-center justify-center">
                   {msg.status_change == 1 && msg.is_attachment == 0 && (
-                    <p className="text-gray-500 text-sm flex items-center justify-center"> {msg.message}</p>
+                    <p className="text-gray-500 text-sm flex items-center justify-center"> {msg.message} on {new Date(msg.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}{', '}
+                      {new Date(msg.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}</p>
                   )}
                 </div>
 
