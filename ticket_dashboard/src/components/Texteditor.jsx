@@ -89,14 +89,14 @@ const TextEditor = ({ editorText, setEditorText, setMessageAdded, messageAdded }
             />
             {isTyping && (
                 <button
-                    className="absolute bottom-2 right-10 bg-[rgb(24,161,161)] text-white p-2 rounded-full"
+                    className="absolute bottom-2 right-20 bg-[rgb(24,161,161)] text-white p-2 rounded-full"
                     onClick={() => { handleSendMessage() }}
                 >
                     <FaPaperPlane />
                 </button>
             )}
 
-            <div className="absolute bottom-2 right-20 flex">
+            <div className="absolute bottom-2 right-10 flex">
                 <label htmlFor="file-upload" className="cursor-pointer text-gray-500 hover:text-gray-700">
                     <FaPaperclip className="text-2xl mb-1" />
                 </label>

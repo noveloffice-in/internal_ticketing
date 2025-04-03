@@ -50,7 +50,7 @@ const TicketButtons = ({ previousStatus }) => {
                         setIsModalOpen(true);
                     }}
                 >
-                    Attach File
+                    Attached File
                 </button>
                 {isModalOpen && (
                     <div className="fixed inset-0 bg-gray-500 bg-opacity-50 backdrop-blur-sm overflow-hidden flex items-center justify-center z-[1300]">
