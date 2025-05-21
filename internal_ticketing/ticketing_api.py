@@ -7,7 +7,7 @@ Node_URL = "http://10.80.4.63:9001"
 
 @frappe.whitelist()
 def get_user_department(user_id: str):
-    user = frappe.get_list("User", filters={"name": user_id}, fields=["department", "user_permission_type"])
+    user = frappe.get_list("User", filters={"name": user_id}, fields=["department", "user_location", "user_permission_type"])
     return user
 
 @frappe.whitelist()
@@ -22,7 +22,7 @@ def get_user_icon(user_id: str):
     return user
 
 @frappe.whitelist()
-def get_ticket_count_by_department(department, user_permission_type, user_id):
+def get_ticket_count_by_department(department, user_location, user_permission_type, user_id):
     if not department:
         return {"error": "Department is required"}
 
@@ -40,10 +40,16 @@ def get_ticket_count_by_department(department, user_permission_type, user_id):
                 status.name = tickets.ticket_status 
             AND 
                 tickets.assigned_department = %s
+            AND
+                (
+                    tickets.location = %s
+                    OR
+                    tickets.location = 'All'
+                )
             GROUP BY 
                 status.name
         """
-        result = frappe.db.sql(query, department, as_dict=True)
+        result = frappe.db.sql(query, [department, user_location], as_dict=True)
     elif user_permission_type == "Member":
         query = """SELECT 
                 status.name as ticket_status, 
@@ -58,10 +64,16 @@ def get_ticket_count_by_department(department, user_permission_type, user_id):
                 tickets.assigned_department = %s
             AND
                 tickets.assigned_to = %s
+            AND
+                (
+                    tickets.location = %s
+                    OR
+                    tickets.location = 'All'
+                )
             GROUP BY 
                 status.name
         """
-        result = frappe.db.sql(query, [department, user_id], as_dict=True)
+        result = frappe.db.sql(query, [department, user_id, user_location], as_dict=True)
     
     all_tickets_count = sum(item['count'] for item in result)
     result.insert(0, {'ticket_status': 'All Tickets', 'count': all_tickets_count})
@@ -69,7 +81,7 @@ def get_ticket_count_by_department(department, user_permission_type, user_id):
     return result
 
 @frappe.whitelist()
-def get_ticket_list(department, user_permission_type, user_id):
+def get_ticket_list(department, user_location, user_permission_type, user_id):
     if not department:
         return {"error": "Department is required"}
     if user_permission_type == "TL" or user_permission_type == "POC":
@@ -81,7 +93,8 @@ def get_ticket_list(department, user_permission_type, user_id):
                 tickets.ticket_status, 
                 tickets.due_date,
                 tickets.creation,
-                tickets.priority
+                tickets.priority,
+                tickets.location
             FROM 
                 `tabInternal Tickets` tickets
             LEFT JOIN 
@@ -90,6 +103,12 @@ def get_ticket_list(department, user_permission_type, user_id):
                 tickets.assigned_to = users.name
             WHERE 
                 tickets.assigned_department = %s
+                AND
+                (
+                    tickets.location = %s
+                    OR
+                    tickets.location = 'All'
+                )
                 AND 
                 (
                     tickets.ticket_status NOT IN ('Cancelled Tickets', 'Solved Tickets') 
@@ -100,7 +119,7 @@ def get_ticket_list(department, user_permission_type, user_id):
             ORDER BY 
                 tickets.creation DESC
             """
-        result = frappe.db.sql(query, department , as_dict=True)
+        result = frappe.db.sql(query, [department, user_location], as_dict=True)
 
     elif user_permission_type == "Member":
         query = """
@@ -111,7 +130,8 @@ def get_ticket_list(department, user_permission_type, user_id):
                 tickets.ticket_status, 
                 tickets.due_date,
                 tickets.creation,
-                tickets.priority
+                tickets.priority,
+                tickets.location
             FROM 
                 `tabInternal Tickets` tickets
             LEFT JOIN 
@@ -120,6 +140,12 @@ def get_ticket_list(department, user_permission_type, user_id):
                 tickets.assigned_to = users.name
             WHERE 
                 tickets.assigned_department = %s
+                AND
+                (
+                    tickets.location = %s
+                    OR
+                    tickets.location = 'All'
+                )
                 AND
                 (
                     tickets.ticket_status NOT IN ('Cancelled Tickets', 'Solved Tickets') 
@@ -132,7 +158,7 @@ def get_ticket_list(department, user_permission_type, user_id):
             ORDER BY 
                 tickets.creation DESC
             """
-        result = frappe.db.sql(query, [department, user_id], as_dict=True)
+        result = frappe.db.sql(query, [department, user_location, user_id], as_dict=True)
     return result
 
 @frappe.whitelist()
@@ -144,7 +170,7 @@ def create_ticket(form_data):
     status = form_data['status']
     priority = form_data['priority']
     parent_ticket = form_data['parentTicket']
-    location = form_data['location']
+    location = form_data['location'] if form_data['location'] else 'All'
     team = form_data['team']
     assigned_to = form_data['assignedTo']
     involved_departments = form_data['involved_departments']
@@ -175,7 +201,7 @@ def create_ticket(form_data):
 @frappe.whitelist()
 def get_ticket_sub_details(ticket_id):
     query = """
-        SELECT assigned_to, due_date, ticket_status, priority, creation, assigned_department, owner
+        SELECT assigned_to, due_date, ticket_status, priority, creation, assigned_department, owner, location
         FROM `tabInternal Tickets`
         WHERE name = %s
     """
@@ -331,17 +357,30 @@ def update_ticket_priority(ticket_id, priority):
         return {"success": True, "message": "Ticket priority updated successfully"}
     except Exception as e:
         return {"error": str(e)}
+    
+@frappe.whitelist() 
+def update_ticket_location(ticket_id, location):
+    if not ticket_id or not location:
+        return {"error": "Ticket ID and location are required"}
+    try:
+        ticket = frappe.get_doc("Internal Tickets", ticket_id)
+        ticket.location = location
+        ticket.save()
+        return {"success": True, "message": "Ticket location updated successfully"}
+    except Exception as e:
+        return {"error": str(e)}
 
 @frappe.whitelist()
 def get_subticket_list_details(department):
     departments = frappe.get_list("Departments", pluck="department_name")
     statuses = frappe.get_list("Internal Ticket Status", pluck="status")
     assignees = frappe.get_list("User", fields=["full_name", "email"], filters={"department": department})
-
+    location = frappe.get_list("Location", pluck="location_name")
     return {
         "departments": departments,
         "statuses": statuses,
-        "assignees": assignees
+        "assignees": assignees,
+        "location": location
     }
 
 @frappe.whitelist()
@@ -440,7 +479,6 @@ def update_ticket_assignee(ticket_id, assignee):
     except Exception as e:
         return {"error": str(e)}
     
-
 @frappe.whitelist()
 def get_ticket_created_by_user(user_id):
     query = """
@@ -462,7 +500,6 @@ def get_ticket_history():
     result = frappe.db.sql(query, ["Cancelled Tickets","Solved Tickets"], as_dict=True)
     return result
 
-
 @frappe.whitelist()
 def get_all_attachments(ticket_id):
     query = """
@@ -472,7 +509,6 @@ def get_all_attachments(ticket_id):
     """
     result = frappe.db.sql(query, ticket_id, as_dict=True)
     return result
-
 
 @frappe.whitelist()
 def close_ticket_status(ticket_id, status):
@@ -502,7 +538,6 @@ def close_ticket_status(ticket_id, status):
     except Exception as e:
         return {"error ticket": str(e)}
     
-
 @frappe.whitelist()
 def get_involved_departments():
     query = """
@@ -511,8 +546,6 @@ def get_involved_departments():
     """
     result = frappe.db.sql(query, as_dict=True)
     return result
-
-
 
 @frappe.whitelist()
 def get_involved_parties(ticket_id):
@@ -534,3 +567,25 @@ def get_tickets_for_involved_parties(department_name):
     """
     result = frappe.db.sql(query, department_name, as_dict=True)
     return result
+
+@frappe.whitelist()
+def get_ticket_location(ticket_id):
+    query = """
+        SELECT location
+        FROM `tabInternal Tickets`
+        WHERE name = %s
+    """
+    result = frappe.db.sql(query, ticket_id, as_dict=True)
+    return result
+
+
+@frappe.whitelist()
+def get_ticket_notification(department):
+    query = """
+        SELECT name from `tabUser` where department = %s and user_permission_type in (%s, %s)
+    """
+    result = frappe.db.sql(query, [department, "TL" , "POC"], as_dict=True)
+    return result
+
+
+

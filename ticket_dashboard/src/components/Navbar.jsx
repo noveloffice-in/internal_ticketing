@@ -5,6 +5,7 @@ import { useFrappeAuth } from "frappe-react-sdk";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { useFrappePostCall } from "frappe-react-sdk";
+import { io } from "socket.io-client";
 export default function Navbar({ toggleSidebar }) {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const { logout } = useFrappeAuth();
@@ -12,6 +13,7 @@ export default function Navbar({ toggleSidebar }) {
     const user_id = Cookies.get('user_id');
     const { call: getUserIcon } = useFrappePostCall("internal_ticketing.ticketing_api.get_user_icon");
     const [user_icon, setUserIcon] = useState(null);
+    const socket = io(import.meta.env.VITE_REACT_APP_API_URL);
     useEffect(() => {
         console.log("user_id:", user_id);
         getUserIcon({
@@ -24,6 +26,8 @@ export default function Navbar({ toggleSidebar }) {
 
     const handleLogout = () => {
         logout();
+        Cookies.remove('user_id');
+        socket.disconnect();
         window.location.href = "/login";
     };
 

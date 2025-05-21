@@ -1,11 +1,11 @@
 import { useParams } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { CiEdit } from "react-icons/ci";
 import { useFrappePostCall, useFrappeAuth } from "frappe-react-sdk";
 import { Toaster, toast } from 'react-hot-toast';
-
+import { FaChevronDown } from "react-icons/fa";
 import 'react-toastify/dist/ReactToastify.css';
 import Cookies from 'js-cookie';
 import io from "socket.io-client";
@@ -18,25 +18,31 @@ const TicketSubDetails = ({ ticketID }) => {
     const [involveParties, setInvolveParties] = useState([]);
     const [statusList, setStatusList] = useState([]);
     const [assigneeList, setAssigneeList] = useState([]);
+    const [locationList, setLocationList] = useState([]);
     const [ticketSubDetails, setTicketSubDetails] = useState([]);
 
-    const socket = io("http://10.80.4.63:9001");
+    const [isCollapsed, setIsCollapsed] = useState(true);
+    
+    const apiUrl = import.meta.env.VITE_REACT_APP_API_URL;
+    const socket = useMemo(() => io(apiUrl), []);
 
     const { call: get_subticket_list_details } = useFrappePostCall("internal_ticketing.ticketing_api.get_subticket_list_details");
     const { call: getTicketSubDetails } = useFrappePostCall("internal_ticketing.ticketing_api.get_ticket_sub_details");
     const { call: get_involved_parties } = useFrappePostCall("internal_ticketing.ticketing_api.get_involved_parties");
-    
     useEffect(() => {
         getTicketSubDetails({ ticket_id: ticketId }).then((response) => {
             setTicketSubDetails(response.message);
             get_involved_parties({ ticket_id: ticketId }).then((response) => {
                 const parties = response.message.map(item => item.department_name);
                 setInvolveParties(parties);
+                console.log(response.message);
             })
+            
             get_subticket_list_details({ department: response.message[0].assigned_department }).then((response) => {
                 setDepartmentList(response.message.departments);
                 setStatusList(response.message.statuses);
                 setAssigneeList(response.message.assignees);
+                setLocationList(response.message.location);
             })
                 .catch((error) => {
                     console.error("Error fetching department list:", error);
@@ -51,6 +57,7 @@ const TicketSubDetails = ({ ticketID }) => {
                 setDepartmentList(response.message.departments);
                 setStatusList(response.message.statuses);
                 setAssigneeList(response.message.assignees);
+                setLocationList(response.message.location);
             })
                 .catch((error) => {
                     console.error("Error fetching department list:", error);
@@ -73,12 +80,16 @@ const TicketSubDetails = ({ ticketID }) => {
     const [showDepartment, setShowDepartment] = useState(false);
     const [ticketDepartment, setTicketDepartment] = useState(ticketSubDetails.assigned_department);
 
+    const [showLocation, setShowLocation] = useState(false);
+    const [ticketLocation, setTicketLocation] = useState(ticketSubDetails.location);
+
     const [involvedParties, setInvolvedParties] = useState([]);
 
     const { call: update_ticket_status } = useFrappePostCall("internal_ticketing.ticketing_api.update_ticket_status");
     const { call: update_ticket_priority } = useFrappePostCall("internal_ticketing.ticketing_api.update_ticket_priority");
     const { call: update_ticket_due_date } = useFrappePostCall("internal_ticketing.ticketing_api.update_ticket_due_date");
     const { call: update_ticket_department } = useFrappePostCall("internal_ticketing.ticketing_api.update_ticket_department");
+    const { call: update_ticket_location } = useFrappePostCall("internal_ticketing.ticketing_api.update_ticket_location");
     const { call: update_ticket_assignee } = useFrappePostCall("internal_ticketing.ticketing_api.update_ticket_assignee");
 
     const handleStatusChange = (previousStatus, status) => {
@@ -98,6 +109,16 @@ const TicketSubDetails = ({ ticketID }) => {
             })
             .catch((error) => {
                 console.error("Error updating priority:", error);
+            });
+    }
+
+    const handleLocationChange = (location) => {
+        setTicketLocation(location);
+        update_ticket_location({ ticket_id: ticketId, location: location })
+            .then((response) => {
+            })  
+            .catch((error) => {
+                console.error("Error updating location:", error);
             });
     }
 
@@ -156,8 +177,12 @@ const TicketSubDetails = ({ ticketID }) => {
             });
     }
 
+    const handleCollapse = () => {
+        setIsCollapsed(!isCollapsed);
+    }
+
     return (
-        <div className="flex flex-col items-start p-4 border rounded-2xl shadow-md bg-white w-full">
+        <div className="flex flex-col items-start p-4 border-none rounded-2xl shadow-md bg-white w-full">
             {ticketSubDetails.map((subdetails, index) => (
 
                 <div key={index} className=" w-full">
@@ -166,12 +191,22 @@ const TicketSubDetails = ({ ticketID }) => {
                         <div className="w-10 h-10 rounded-full flex items-center justify-center text-base mr-2  text-white bg-[rgb(142,189,189)]">
                             {subdetails.owner_profile}
                         </div>
+                        
                         <div>
                             <p className="text-md text-gray-500 font-bold">{subdetails.owner_full_name}</p>
                             <p className="text-sm text-gray-500">{subdetails.owner_designation}</p>
                         </div>
+
+                        <div className="ml-auto cursor-pointer mt-0">
+                            <FaChevronDown 
+                                onClick={handleCollapse} 
+                                className={`text-gray-500 transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`} 
+                            />
+                        </div>
                     </div>
 
+                    {!isCollapsed && (
+                    <>
                     <div className="text-gray-500 flex items-center w-full">
                         <strong className="mr-2 text-sm">Assigned To: </strong> {ticketAssignee || subdetails.assigned_to_full_name}
                         <span className="ml-2 cursor-pointer text-blue-500">
@@ -392,6 +427,49 @@ const TicketSubDetails = ({ ticketID }) => {
                                 </div>
                             )}
                         </span>
+                    </div>
+
+                    <div className={`text-600 text-gray-500 flex items-center w-full mt-3 `}>
+                        <strong className="mr-2 text-sm">Location: </strong> {ticketLocation || subdetails.location}
+                        <span className="ml-2 cursor-pointer text-blue-500">
+                            <CiEdit onClick={() => {
+                                setShowLocation(!showLocation);
+                                if (!showLocation) {
+                                    setTimeout(() => {
+                                        document.addEventListener('click', function closeStatusDropdown(e) {
+                                            if (!e.target.closest('.status-dropdown') && e.target !== document.querySelector('.ml-2.cursor-pointer.text-black')) {
+                                                setShowLocation(false);
+                                                document.removeEventListener('click', closeStatusDropdown);
+                                            }
+                                        });
+                                    }, 0);
+                                }
+                            }} className="text-black" />
+
+                            {showLocation && (
+                                <div className="flex relative z-10">
+                                    <ul className="absolute top-full -right-12 bg-white border border-gray-300 rounded-md shadow-lg w-60 max-h-60 overflow-y-auto">
+                                        {locationList.map((location, index) => (
+                                            <li
+                                                key={index}
+                                                className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                                                onClick={() => {
+                                                    const previousLocation = subdetails.location;
+                                                    handleLocationChange(location);
+                                                    setShowLocation(false);
+                                                    toast.success("Location updated successfully", {
+                                                        position: "bottom-right",
+                                                        autoClose: 1000,
+                                                    });
+                                                }}
+                                            >
+                                                {location}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                        </span>
 
                     </div>
 
@@ -427,6 +505,8 @@ const TicketSubDetails = ({ ticketID }) => {
                             return `${formattedDate} ${time}`;
                         })()}
                     </div>
+                    </>
+                    )}
 
                 </div>
             ))}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Timelinemodal from "./Timelinemodal";
 import io from "socket.io-client";
 import { useFrappePostCall } from "frappe-react-sdk";
@@ -22,7 +22,8 @@ const TicketTimeline = ({ ticketID }) => {
     const [showTimeline, setShowTimeline] = useState(false);
     const [ticketTimeline, setTicketTimeline] = useState([]);
     const { call: getTicketTimeline } = useFrappePostCall("internal_ticketing.ticketing_api.get_ticket_timeline");
-    const socket = io("http://10.80.4.63:9001");
+    const apiUrl = import.meta.env.VITE_REACT_APP_API_URL;
+    const socket = useMemo(() => io(apiUrl), []);
 
     useEffect(() => {
         getTicketTimeline({ ticket_id: ticketID }).then((response) => {

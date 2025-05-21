@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import Searchbar from "../components/Searchbar";
 import { useFrappeAuth, useFrappePostCall } from "frappe-react-sdk";
@@ -25,9 +25,12 @@ const SentTicket = () => {
     const [userPermissionType, setUserPermissionType] = useState("");
     const [messages, setMessages] = useState([]);
     const { ticketId } = useParams();
+    const [userLocation, setUserLocation] = useState("");
     Cookies.set(getUserCookie);
-    const socket = io("http://10.80.4.63:9001");
+    const apiUrl = import.meta.env.VITE_REACT_APP_API_URL;
     const { call: getUserDepartment } = useFrappePostCall("internal_ticketing.ticketing_api.get_user_department");
+
+    const socket = useMemo(() => io(apiUrl), []);
 
     socket.on("ticket_updated", (updatedTicket) => {
         console.log("🔄 Ticket update received from Node:", updatedTicket);
@@ -50,17 +53,18 @@ const SentTicket = () => {
         }).then((res) => {
             setUserDepartment(res['message'][0]['department']);
             setUserPermissionType(res['message'][0]['user_permission_type']);
-            getTicketCountByDepartment(userDepartment, userPermissionType, Cookies.get('user_id'));
-            getTicketList(userDepartment, userPermissionType, Cookies.get('user_id'));
+            getTicketCountByDepartment(userDepartment, userPermissionType, userLocation, Cookies.get('user_id'));
+            getTicketList(userDepartment, userPermissionType, userLocation, Cookies.get('user_id'));
         }).catch((err) => {
             console.log("Error", err);
         })
     }, [userDepartment]);
 
-    const getTicketCountByDepartment = (userDepartment, userPermissionType, userId) => {
+    const getTicketCountByDepartment = (userDepartment, userPermissionType, userLocation, userId) => {
         get_ticket_count_by_department({
             department: userDepartment,
             user_permission_type: userPermissionType,
+            user_location: userLocation,
             user_id: userId
         })
             .then((res) => {
@@ -71,11 +75,12 @@ const SentTicket = () => {
             })
     }
 
-    const getTicketList = (userDepartment, userPermissionType, userId) => {
+    const getTicketList = (userDepartment, userPermissionType, userLocation, userId) => {
         get_ticket_list({
             department: userDepartment,
             user_permission_type: userPermissionType,
-            user_id: userId
+            user_location: userLocation,
+            user_id: userId,
         })
             .then((res) => {
                 setTicketList(res['message']);

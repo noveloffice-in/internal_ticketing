@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useFrappeAuth, useFrappePostCall } from 'frappe-react-sdk';
 import Cookies from 'js-cookie';
 import io from "socket.io-client";
@@ -9,11 +9,14 @@ const TicketMessages = ({ ticketID }) => {
   const messagesEndRef = useRef(null);
   const [ticketMessages, setTicketMessages] = useState([]);
   const { call: getTicketMessages } = useFrappePostCall("internal_ticketing.ticketing_api.get_ticket_messages");
-  const socket = io("http://10.80.4.63:9001");
+  const apiUrl = import.meta.env.VITE_REACT_APP_API_URL;
+  const socket = useMemo(() => io(apiUrl), []);
   useEffect(() => {
     getTicketMessages({ ticket_id: ticketID }).then((response) => {
       setTicketMessages(response.message);
     });
+
+
   }, [ticketID]);
 
   socket.on("ticket_updated", (updatedTicket) => {
@@ -27,7 +30,7 @@ const TicketMessages = ({ ticketID }) => {
       <div className="bg-white pt-4 pl-4 rounded-2xl shadow-md" >
         <p className="text-sm text-gray-500">Subject:</p>
         <h1 className="text-2xl text-gray-700 font-bold mb-4">{ticketMessages[1]}</h1>
-        <hr></hr>
+        <hr className="border-gray-200 mt-4"></hr>
 
         <div className="overflow-y-auto rounded-2xl" style={{ maxHeight: '400px', minHeight: '500px' }}>
           {ticketMessages[0] && ticketMessages[0].length > 0 && (

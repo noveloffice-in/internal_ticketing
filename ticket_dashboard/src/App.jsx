@@ -10,7 +10,7 @@ function App() {
     const h = window.innerHeight;
 
     if (w <= 1366 && h <= 768) {
-      setScaleClass("scale-75 w-[133.33%] h-[133.33%]");
+      setScaleClass("scale-75 w-[133.33%] h-[140%]");
     } else if (w <= 1920 && h <= 1080) {
       setScaleClass("")  
     }

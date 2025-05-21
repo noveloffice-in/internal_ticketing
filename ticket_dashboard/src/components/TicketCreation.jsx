@@ -18,6 +18,7 @@ const CreateTicketModal = ({ onClick, isOpen, isSubticket, parentTicketId }) => 
     const [formData, setFormData] = useState({
         assigned_department: '',
         parentTicket: parentTicketId || '',
+        location: '',
         team: '',
         subject: '',
         message: '',
@@ -25,8 +26,7 @@ const CreateTicketModal = ({ onClick, isOpen, isSubticket, parentTicketId }) => 
         priority: 'Medium',
         assignedTo: 'unassigned@noveloffice.in',
         dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        involved_departments: [],
-        location: 'All'
+        involved_departments: []
     });
 
     const { call: getAllDataforCreateTicket } = useFrappePostCall("internal_ticketing.ticketing_api.get_all_data_for_create_ticket");
@@ -94,46 +94,40 @@ const CreateTicketModal = ({ onClick, isOpen, isSubticket, parentTicketId }) => 
     };
 
     return (
-        <div className="fixed inset-0 justify-center bg-black bg-opacity-50 backdrop-blur-sm z-[1300] overflow-y-auto ">
-            <div className='bg-white rounded-xl ml-40 mr-40 p-10 mt-40 mb-40'>
-                <button className='absolute top-40 right-40 m-4' onClick={onClick}>
-                    <IoClose size={30}/>
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-50 backdrop-blur-sm overflow-hidden flex items-center justify-center z-[1300]">
+            <div className="bg-white rounded-md shadow-lg ml-13 mr-0 p-10 mt-60 mb-40 max-h-[100vh] overflow-y-auto relative">
+                <button className='absolute top-2 right-2' onClick={onClick}>
+                    <IoClose size={24} />
                 </button>
-                <h2 className='text-2xl text-center font-bold'>Create a new Ticket</h2>
-                <form onSubmit={handleSubmit}>
+                <h2 className='text-base text-center font-bold mb-4'>Create a new Ticket</h2>
+                <form onSubmit={handleSubmit} className="overflow-y-auto">
                     {isSubticket && (
-                        <div className="mb-4 flex">
-                            <div className="w-1/2 pr-2">
-                                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="parentTicket">
-                                    Parent Ticket
-                                </label>
-                                <input type="text" id="parentTicket" name="parentTicket" value={parentTicketId} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" onChange={handleChange} onInput={(e) => e.target.setCustomValidity('')} readOnly />
-                                
-                            </div>
+                        <div className="mb-4">
+                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="parentTicket">
+                                Parent Ticket
+                            </label>
+                            <input type="text" id="parentTicket" name="parentTicket" value={parentTicketId} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" onChange={handleChange} onInput={(e) => e.target.setCustomValidity('')} readOnly />
                         </div>
                     )}
 
-                    <div className="mb-4 flex">
-                        <div className="w-1/2 pr-2">
-                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="to">
-                                To
-                            </label>
-                            <select id="assigned_department" name="assigned_department" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" defaultValue="" onChange={(e) => { setSelectedDepartment(e.target.value); handleChange(e); }} required onInvalid={(e) => e.target.setCustomValidity('Please select a department')} onInput={(e) => e.target.setCustomValidity('')}>
-                                <option value="" disabled></option>
-                                {departments.map((department, index) => (
-                                    <option key={index} value={department}>{department}</option>
-                                ))}
-                            </select>
-                        </div>
+                    <div className="mb-4">
+                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="to">
+                            To
+                        </label>
+                        <select id="assigned_department" name="assigned_department" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" defaultValue="" onChange={(e) => { setSelectedDepartment(e.target.value); handleChange(e); }} required onInvalid={(e) => e.target.setCustomValidity('Please select a department')} onInput={(e) => e.target.setCustomValidity('')}>
+                            <option value="" disabled></option>
+                            {departments.map((department, index) => (
+                                <option key={index} value={department}>{department}</option>
+                            ))}
+                        </select>
                     </div>
 
-                    <div className="mb-4 w-1/2 pr-2">
-                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="involved_departments"></label>
-                        <MultiSelect className="w-1/2" label="Invovled Departments" departments={departments} onChange={(e) => setFormData(prevState => ({ ...prevState, involved_departments: e }))} />
+                    <div className="mb-4">
+                        <MultiSelect className="w-full" label="Involved Departments" departments={departments} onChange={(e) => setFormData(prevState => ({ ...prevState, involved_departments: e }))} />
                     </div>
 
                     {departmentsWithLocation.includes(selectedDepartment) && (
-                        <div className="mb-4 w-1/2 pr-2">
+                        <div className="mb-4">
                             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="location">
                                 Location
                             </label>
@@ -147,33 +141,32 @@ const CreateTicketModal = ({ onClick, isOpen, isSubticket, parentTicketId }) => 
                     )}
                     
                     {departmentWithTeams.includes(selectedDepartment) && (
-                        <div className="mb-4 flex">
-                            <div className="w-1/2 pr-2">
+                        <>
+                            <div className="mb-4">
                                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="team">
                                     Team
                                 </label>
                                 <select id="team" name="team" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" defaultValue="" onChange={handleChange}>
                                     <option value="" disabled></option>
-                                    {teams[selectedDepartment].map((team, index) => (
+                                    {teams[selectedDepartment]?.map((team, index) => (
                                         <option key={index} value={team}>{team}</option>
                                     ))}
                                 </select>
                             </div>
-                            <div className="w-1/2 pl-2">
+                            <div className="mb-4">
                                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="assignedTo">
                                     Assigned To
                                 </label>
                                 <select id="assignedTo" name="assignedTo" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" defaultValue="" onChange={(e) => {handleChange(e)}}>
-                                    
                                     <option value="" disabled></option>
                                     {Object.keys(assignedToOptions).map((option, index) => (
-                                        assignedToOptions[option].department === selectedDepartment && (
+                                        assignedToOptions[option]?.department === selectedDepartment && (
                                             <option key={index} value={option}>{option}</option>
                                         )
                                     ))}
                                 </select>
                             </div>
-                        </div>
+                        </>
                     )}
 
                     <div className="mb-4">
@@ -190,8 +183,8 @@ const CreateTicketModal = ({ onClick, isOpen, isSubticket, parentTicketId }) => 
                         <textarea id="message" name="message" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="4" onChange={handleChange} required onInvalid={(e) => e.target.setCustomValidity('Please enter a message')} onInput={(e) => e.target.setCustomValidity('')}></textarea>
                     </div>
 
-                    <div className="mb-4 flex flex-wrap">
-                        <div className="w-1/2 pr-2">
+                    <div className="mb-4 grid grid-cols-2 gap-4">
+                        <div>
                             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="status">
                                 Status
                             </label>
@@ -199,7 +192,7 @@ const CreateTicketModal = ({ onClick, isOpen, isSubticket, parentTicketId }) => 
                                 <option value="unassigned">Unassigned</option>
                             </select>
                         </div>
-                        <div className="w-1/2 pl-2">
+                        <div>
                             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="priority">
                                 Priority
                             </label>
@@ -211,22 +204,18 @@ const CreateTicketModal = ({ onClick, isOpen, isSubticket, parentTicketId }) => 
                         </div>
                     </div>
 
-                    <div className="mb-4 flex flex-wrap">
-                        <div className="w-1/2 pr-2">
-                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="due-date">
-                                Due Date
-                            </label>
-                            <input type="date" id="due-date" name="dueDate" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" defaultValue={formData.dueDate} onChange={handleChange} min={new Date().toISOString().split('T')[0]} />
-                        </div>
+                    <div className="mb-4">
+                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="due-date">
+                            Due Date
+                        </label>
+                        <input type="date" id="due-date" name="dueDate" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" defaultValue={formData.dueDate} onChange={handleChange} min={new Date().toISOString().split('T')[0]} />
                     </div>
-                    <div className="flex justify-end">
-                        <button type="submit" className="bg-[rgb(24,161,161)] text-white rounded-xl px-4 py-2" >
+                    <div className="flex justify-center mt-6">
+                        <button type="submit" className="bg-[rgb(24,161,161)] text-white rounded-xl px-6 py-2 font-medium">
                             Create Ticket
                         </button>
                     </div>
-                    
                 </form>
-                <Toaster />
             </div>
         </div>
     );

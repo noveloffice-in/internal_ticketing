@@ -1,8 +1,6 @@
 import React from 'react';
 import { useEffect } from 'react';
 
-
-
 const Modal = ({ onClose, ticketTimeline }) => {
 
     useEffect(() => {
@@ -17,7 +15,7 @@ const Modal = ({ onClose, ticketTimeline }) => {
 
     return (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-50 backdrop-blur-sm overflow-hidden flex items-center justify-center z-[1300]">
-            <div className="p-5 border w-3/5 shadow-lg rounded-md bg-white">
+            <div className="p-5 border-none w-full md:w-3/5 max-h-[90vh] overflow-y-auto shadow-lg rounded-md bg-white mx-4">
                 <h3 className="text-lg leading-6 font-bold text-gray-900 text-left">Ticket Timeline</h3>
                 <div className="m-3">
                     {ticketTimeline.length > 0 ? (
@@ -26,8 +24,6 @@ const Modal = ({ onClose, ticketTimeline }) => {
                             return (
                                 <div key={index} className="flex space-x-3 relative">
                                     {/* Timeline Marker (Bullet & Line) */}
-
-
                                     <div className="flex flex-col items-center relative mt-2">
                                         {/* Bullet Point */}
                                         <div className="w-2 h-2 bg-gray-400 rounded-full relative">
@@ -65,7 +61,7 @@ const Modal = ({ onClose, ticketTimeline }) => {
                 </div>
                 <div className="items-right px-4 py-3 flex justify-end">
                     <button
-                        className="px-4 py-2 text-black text-base font-medium rounded-md shadow-sm  border border-gray-300"
+                        className="px-4 py-2 text-black text-base font-medium rounded-md shadow-sm border border-gray-300"
                         onClick={onClose}
                     >
                         Close
