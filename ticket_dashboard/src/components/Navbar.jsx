@@ -25,10 +25,11 @@ export default function Navbar({ toggleSidebar }) {
     }, [user_id])
 
     const handleLogout = () => {
-        logout();
         Cookies.remove('user_id');
-        socket.disconnect();
+        logout();
+        navigate("/login");
         window.location.href = "/login";
+        socket.disconnect();
     };
 
     return (
